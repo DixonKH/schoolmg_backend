@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -8,106 +8,246 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Profile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  role      Role
-  fullName  String
-  phone     String?
-  avatarUrl String?
-  createdAt DateTime @default(now())
-
-  student Student?
-  teacher Teacher?
-  parent  Parent?
-}
-
-enum Role {
+enum UserRole {
   ADMIN
+  SALES
   TEACHER
-  STUDENT
+  ACCOUNTANT
   PARENT
 }
 
-model Class {
-  id       String  @id @default(uuid())
-  name     String
-  grade    Int
-  createdAt DateTime @default(now())
-
-  students Student[]
-  teachers Teacher[]
-  lessons  Lesson[]
+enum LeadStatus {
+  NEW
+  CONTACTED
+  TRIAL
+  REGISTERED
+  LOST
 }
 
-model Student {
-  id          String    @id @default(uuid())
-  profiledId  String    @unique
-  classId     String
-  parentId    String?
-  birthDate   DateTime?
-  parentPhone String?
-  grades      Grade[]
-
-  profile Profile @relation(fields: [profiledId], references: [id])
-  class   Class   @relation(fields: [classId], references: [id])
-  parent  Parent? @relation(fields: [parentId], references: [id])
-  createdAt DateTime @default(now())
+enum StudentStatus {
+  ACTIVE
+  SUSPENDED
+  GRADUATED
+  LEFT
 }
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+////////////////////
+/// USER (AUTH)
+////////////////////
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+
+  teacher   Teacher?
+  parent    Parent?
+  staff     Staff?
+}
+
+////////////////////
+/// STAFF (Admin, Sales, Accountant)
+////////////////////
+
+model Staff {
+  id        String   @id @default(uuid())
+  fullName  String
+  phone     String?
+  position  String?
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  leads     Lead[]
+}
+
+////////////////////
+/// LEAD (CRM CORE)
+////////////////////
+
+model Lead {
+  id           String     @id @default(uuid())
+  fullName     String
+  phone        String
+  source       String?
+  status       LeadStatus @default(NEW)
+  notes        String?
+
+  assignedToId String?
+  assignedTo   Staff?     @relation(fields: [assignedToId], references: [id])
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+////////////////////
+/// PARENT
+////////////////////
 
 model Parent {
   id        String   @id @default(uuid())
-  profileId String   @unique
-  createdAt DateTime @default(now())
+  fullName  String
+  phone     String
+  email     String?
 
-  profile  Profile @relation(fields: [profileId], references: [id])
-  children Student[]
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+
+  students  Student[]
+  createdAt DateTime @default(now())
 }
+
+////////////////////
+/// STUDENT
+////////////////////
+
+model Student {
+  id             String        @id @default(uuid())
+  fullName       String
+  birthDate      DateTime
+  status         StudentStatus @default(ACTIVE)
+  enrollmentDate DateTime      @default(now())
+
+  parentId       String
+  parent         Parent        @relation(fields: [parentId], references: [id])
+
+  classId        String?
+  class          Class?        @relation(fields: [classId], references: [id])
+
+  payments       Payment[]
+  attendances    Attendance[]
+  grades         Grade[]
+
+  createdAt      DateTime @default(now())
+}
+
+////////////////////
+/// TEACHER
+////////////////////
 
 model Teacher {
-  id             String   @id @default(uuid())
-  profiledId     String   @unique
-  specialization String
-  createdAt      DateTime @default(now())
+  id        String   @id @default(uuid())
+  fullName  String
+  phone     String?
 
-  profile Profile  @relation(fields: [profiledId], references: [id])
-  classes Class[]
-  lessons Lesson[]
-  grades  Grade[]
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  classes   Class[]
+  subjects  Subject[]
 }
+
+////////////////////
+/// CLASS
+////////////////////
+
+model Class {
+  id        String   @id @default(uuid())
+  name      String
+  capacity  Int
+
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+
+  students  Student[]
+  subjects  Subject[]
+  schedule  Schedule[]
+
+  createdAt DateTime @default(now())
+}
+
+////////////////////
+/// SUBJECT
+////////////////////
 
 model Subject {
-  id   String @id @default(uuid())
-  name String
+  id        String   @id @default(uuid())
+  name      String
 
-  lessons Lesson[]
-  grades  Grade[]
-}
-
-model Lesson {
-  id        String @id @default(uuid())
   classId   String
-  teacherId String
-  subjectId String
-  weekday   Int
-  startTime DateTime
-  endTime   DateTime
+  class     Class    @relation(fields: [classId], references: [id])
 
-  class   Class   @relation(fields: [classId], references: [id])
-  teacher Teacher @relation(fields: [teacherId], references: [id])
-  subject Subject @relation(fields: [subjectId], references: [id])
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+
+  grades    Grade[]
 }
+
+////////////////////
+/// ATTENDANCE
+////////////////////
+
+model Attendance {
+  id        String   @id @default(uuid())
+  date      DateTime
+  present   Boolean
+
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+////////////////////
+/// GRADES
+////////////////////
 
 model Grade {
   id        String   @id @default(uuid())
-  studentId String
-  subjectId String
-  teacherId String
-  value     Int
-  comment   String?
-  createdAt DateTime @default(now())
+  value     Float
 
-  student Student @relation(fields: [studentId], references: [id])
-  subject Subject @relation(fields: [subjectId], references: [id])
-  teacher Teacher @relation(fields: [teacherId], references: [id])
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+}
+
+////////////////////
+/// PAYMENT
+////////////////////
+
+model Payment {
+  id        String         @id @default(uuid())
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  method    PaymentMethod
+  paidAt    DateTime?
+
+  studentId String
+  student   Student        @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+////////////////////
+/// SCHEDULE
+////////////////////
+
+model Schedule {
+  id        String   @id @default(uuid())
+  dayOfWeek Int      // 1 - Monday, 7 - Sunday
+  startTime String
+  endTime   String
+
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Notification {
+  id      String @id @default(uuid())
+  title   String
+  message String
+  userId  String
 }
