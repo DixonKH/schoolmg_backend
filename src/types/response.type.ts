@@ -1,7 +1,7 @@
 import { User } from "../generated/prisma/client";
 
 /**
- * FE ga yuboriladigan user
+ * Foydalanuvchi ga yuboriladigan user
  */
 export type PublicUser = Omit<
   User,

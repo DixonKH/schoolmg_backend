@@ -1,8 +1,10 @@
+import { UserRole } from "../generated/prisma";
+
 export interface RegisterDTO {
     email: string;
     password: string;
     username: string;
-    role: string;
+    role: UserRole;
 }
 
 export interface LoginDTO {
