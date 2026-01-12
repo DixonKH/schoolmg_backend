@@ -59,4 +59,8 @@ export class AuthService {
 
     return { user, token };
   }
+
+  async getStudents() {
+    
+  }
 }
