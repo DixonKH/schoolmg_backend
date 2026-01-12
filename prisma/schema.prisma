@@ -10,10 +10,10 @@ datasource db {
 
 enum UserRole {
   ADMIN
-  SALES
   TEACHER
   ACCOUNTANT
   PARENT
+  STUDENT
 }
 
 enum LeadStatus {

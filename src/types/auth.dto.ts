@@ -13,6 +13,6 @@ export interface LoginDTO {
 }
 
 export interface JwtPayload {
-  userId: string;
+  id: number;
   role: string;
 }
