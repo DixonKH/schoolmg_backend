@@ -2,7 +2,6 @@ import { PrismaClient, User } from "../../generated/prisma";
 import { LoginDTO, RegisterDTO } from "../../types/auth.dto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-const prisma = new PrismaClient();
 
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
@@ -60,7 +59,4 @@ export class AuthService {
     return { user, token };
   }
 
-  async getStudents() {
-    
-  }
 }

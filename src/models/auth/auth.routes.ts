@@ -10,12 +10,5 @@ const authController = new AuthController();
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// protected routes
-router.get(
-  "/admin/users",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  //authController.getStudents
-);
 
 export default router;
