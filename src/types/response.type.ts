@@ -15,3 +15,13 @@ export interface ApiResponse<T> {
   message?: string;
   data?: T;
 }
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPage: number;
+  };
+}

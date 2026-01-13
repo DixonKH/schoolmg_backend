@@ -28,11 +28,17 @@ export class AdminController {
 
    async getAllUsers(req: Request, res: Response) {
        try {
-        const allUsers = await adminService.getAllUsers();
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search as string;
+
+        const allUsers = await adminService.getAllUsers(page, limit, search);
+
         return res.status(200).json({
             success: true,
-            data: allUsers
+            allUsers
         });
+        
        }catch(error: any){
          return res.status(400).json({
              success: false,
