@@ -1,6 +1,7 @@
 import { PrismaClient, User, UserRole } from "../../generated/prisma";
 import { CreateUserDTO } from "../../types/admin.dto";
 import * as bcrypt from "bcrypt";
+import { PublicUser } from "../../types/response.type";
 
 export class AdminService {
   constructor(private prisma: PrismaClient) {}
@@ -21,7 +22,7 @@ export class AdminService {
     };
   }
 
-  async getAllUsers(): Promise<Omit<User, "password">[]> {
+  async getAllUsers(): Promise<PublicUser[]> {
     const allUsers = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -36,34 +37,60 @@ export class AdminService {
     return allUsers;
   }
 
-  async getUserById(id: string) {
-    return await this.prisma.user.findUnique({
+  async getUserById(id: string): Promise<User | null> {
+     const user = await this.prisma.user.findUnique({
       where: { id },
     });
+
+
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  async updateUserRole(id: string, role: UserRole) {
-    return await this.prisma.user.update({
+    console.log("user: ", user);
+    return user;
+  }
+
+  // async updateUserRole(id: string, role: UserRole): Promise<PublicUser> {
+  //   return await this.prisma.user.update({
+  //     where: { id },
+  //     data: { role },
+  //   });
+  // }
+
+  async deleteUser(id: string): Promise<PublicUser> {
+    const deletedUser = await this.prisma.user.delete({
       where: { id },
-      data: { role },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        createdAt: true
+      }
     });
+    if(!deletedUser) {
+      throw new Error("User not found");
+    }
+
+    console.log("deletedUser: ", deletedUser);
+
+    return deletedUser;
+
   }
 
-  async deleteUser(id: string) {
-    return await this.prisma.user.delete({
-      where: { id },
-    });
-  }
-
-  async createUser(data: CreateUserDTO) {
+  async createUser(data: CreateUserDTO): Promise<PublicUser> {
     const hashed = await bcrypt.hash(data.password, 10);
-    return await this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: data.email,
-        username: data.email,
+        username: data.username,
         role: data.role,
         password: hashed,
       },
     });
+
+    console.log("user: ", user);
+    return user;
   }
 }

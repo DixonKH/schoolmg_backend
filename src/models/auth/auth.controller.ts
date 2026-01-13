@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "../../generated/prisma";
 import { AuthService } from "./auth.service";
+import { ApiResponse, AuthResponse } from "../../types/response.type";
 
 const prisma = new PrismaClient();
 const authService = new AuthService(prisma);
@@ -40,14 +41,14 @@ export class AuthController {
 
       const { password: _, ...safeUser } = user;
 
-      res.status(200).json({
+     return res.status(200).json({
         success: true,
         message: "User logged in successfully",
         data: {
           user: safeUser,
-          accsessToken: token,
+          accessToken: token,
         },
-      });
+      } satisfies ApiResponse<AuthResponse>);
     } catch (e: any) {
         return res.status(400).json({
             success: false,

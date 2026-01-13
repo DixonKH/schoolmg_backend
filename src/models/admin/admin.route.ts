@@ -12,11 +12,40 @@ router.get(
   roleMiddleware("ADMIN"),
   adminController.getDashboardStats
 );
+
 router.get(
   "/dashboard/users",
   authMiddleware,
   roleMiddleware("ADMIN"),
   adminController.getAllUsers
+);
+
+router.get(
+  "/dashboard/users/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  adminController.getUserById
+);
+
+// router.put(
+//   "/dashboard/users/:id",
+//   authMiddleware,
+//   roleMiddleware("ADMIN"),
+//   adminController.updateUserRole
+// );
+
+router.delete(
+  "/dashboard/user_delete/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  adminController.deleteUser
+);
+
+router.post(
+  "/dashboard/user_create",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  adminController.createUser
 );
 
 export default router;
