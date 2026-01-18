@@ -21,7 +21,7 @@ export class StudentService {
               where: { userId },
               data
           });
-          
+
           return student
     }
 }
