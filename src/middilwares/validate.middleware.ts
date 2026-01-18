@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ZodSchema } from "zod";
+import { ZodError, ZodSchema } from "zod";
 
 
 export const validateMiddleware = (schema: ZodSchema<any>) => {
@@ -8,11 +8,19 @@ export const validateMiddleware = (schema: ZodSchema<any>) => {
                 schema.parse(req.body);
                 next();
             }catch(e:any) {
-               return res.status(400).json({
+              if (e instanceof ZodError) {
+                // ZodError da issues array bor
+                const messages = e.issues.map(issue => issue.message).join(", ");
+                return res.status(400).json({
                     success: false,
-                    message: e.message?.map((error: any) => error.message).join(", ") || e.message,
-                    
+                    message: messages,
                 });
+            }
+            // boshqa xatolar uchun fallback
+            return res.status(400).json({
+                success: false,
+                message: e.message || "Validation error",
+            });
             }
         };
     };

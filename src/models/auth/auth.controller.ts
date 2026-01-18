@@ -1,15 +1,16 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "../../generated/prisma";
 import { AuthService } from "./auth.service";
 import { ApiResponse, AuthResponse } from "../../types/response.type";
+import { RegisterInput } from "../../schemas/auth.schema";
 
 const prisma = new PrismaClient();
 const authService = new AuthService(prisma);
 
 export class AuthController {
-  async register(req: Request, res: Response) {
+  async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, username, password, role } = req.body;
+      const { email, username, password, role }: RegisterInput = req.body;
 
       const user = await authService.register({
         email,
@@ -26,14 +27,11 @@ export class AuthController {
         data: safeUser,
       });
     } catch (e: any) {
-        return res.status(400).json({
-            success: false,
-            message: e.message
-        })
+        next(e);
     }
   }
 
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { username, password } = req.body;
 
@@ -50,10 +48,7 @@ export class AuthController {
         },
       } satisfies ApiResponse<AuthResponse>);
     } catch (e: any) {
-        return res.status(400).json({
-            success: false,
-            message: e.message
-        })
+        next(e);
     }
   }
 }
