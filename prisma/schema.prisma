@@ -53,6 +53,7 @@ model User {
   username  String   @unique
   password  String
   role      UserRole
+  isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
 
   teacher   Teacher?

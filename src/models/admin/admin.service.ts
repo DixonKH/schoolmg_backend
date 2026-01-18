@@ -73,15 +73,16 @@ export class AdminService {
   }
 
   async deleteUser(id: string): Promise<PublicUser> {
-    const deletedUser = await this.prisma.user.delete({
+    const deletedUser = await this.prisma.user.update({
       where: { id },
+      data: {isDeleted: true},
       select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
+      id: true,
+      email: true,
+      username: true,
+      role: true,
+      createdAt: true
+    }
     });
     if (!deletedUser) {
       throw new Error("User not found");
