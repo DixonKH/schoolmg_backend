@@ -1,16 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
+import { UpdateUserDTO } from "../../types/update.dto";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
 
 export class StudentController {
-  async getMe(req: AuthRequest, res: Response, next: NextFunction) {
+  async getMe(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | undefined> {
     const userId = req.user!.id;
     try {
-      const user = await studentService.getMe(userId);
+      const user: Student = await studentService.getMe(userId);
 
       return res.status(200).json({
         success: true,
@@ -21,11 +22,11 @@ export class StudentController {
     }
   }
 
-  async updateProfile(req: AuthRequest, res: Response, next: NextFunction) {
+  async updateProfile(req: AuthRequest, res: Response, next: NextFunction):Promise<Response | undefined> {
     const userId = req.user!.id;
 
     try {
-      const user = await studentService.updateProfile(userId, req.body);
+      const user = await studentService.updateProfile(userId, req.body as UpdateUserDTO);
 
       return res.status(200).json({
         success: true,
@@ -42,6 +43,7 @@ export class StudentController {
       return res.status(400).json({ message: "Avatar not found" });
     }
     const avatarUrl = `/uploads/${req.file.filename}`;
+    console.log("avatarUrl: ", avatarUrl);
 
     try {
       const user = await studentService.updateProfile(userId, {

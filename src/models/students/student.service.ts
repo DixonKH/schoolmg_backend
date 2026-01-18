@@ -17,11 +17,15 @@ export class StudentService {
     }
 
     async updateProfile(userId: string, data: UpdateUserDTO): Promise<Student> {
+        const cleanData: Partial<UpdateUserDTO> = Object.fromEntries(
+            Object.entries(data).filter(([_, value]) => value !== undefined)
+        )
+         
           const student = await this.prisma.student.update({
               where: { userId },
-              data
+              data: cleanData
           });
-
+        console.log("student: ", student);
           return student
     }
 }

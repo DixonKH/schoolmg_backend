@@ -1,7 +1,8 @@
 export interface UpdateUserDTO {
-    username?: string;
     fullName?: string;
+    parentName?: string;
+    phone?: string;
+    parentPhone?: string;
     avatar?: string;
-    phoneNumber?: string;
     address?: string;
 }

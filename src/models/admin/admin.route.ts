@@ -6,46 +6,19 @@ import { AdminController } from "./admin.controller";
 const router = express.Router();
 const adminController = new AdminController();
 
-router.get(
-  "/dashboard/stats",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.getDashboardStats
-);
+router.use(authMiddleware);
+router.use(roleMiddleware("ADMIN"));
 
-router.get(
-  "/dashboard/users",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.getAllUsers
-);
+router.get("/get_stats", adminController.getDashboardStats);
 
-router.get(
-  "/dashboard/users/:id", 
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.getUserById
-);
+router.get("/all_users", adminController.getAllUsers);
 
-router.delete(
-  "/dashboard/user_delete/:id",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.deleteUser
-);
+router.get("/user/:id", adminController.getUserById);
 
-router.post(
-  "/create_student",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.createStudent
-);
+router.delete("/user_delete/:id", adminController.deleteUser);
 
-router.post(
-  "/create_teacher",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  adminController.createTeacher
-);
+router.post("/create_student", adminController.createStudent);
+
+router.post("/create_teacher", adminController.createTeacher);
 
 export default router;
