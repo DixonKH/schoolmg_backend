@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, User, UserRole } from "../../generated/prisma";
+import { Prisma, PrismaClient, User } from "../../generated/prisma";
 import { CreateUserDTO } from "../../types/admin.dto";
 import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";

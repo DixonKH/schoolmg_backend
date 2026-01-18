@@ -57,6 +57,7 @@ model User {
   createdAt DateTime @default(now())
 
   teacher   Teacher?
+  student   Student?
   parent    Parent?
   staff     Staff?
 }
@@ -122,6 +123,13 @@ model Student {
   birthDate      DateTime
   status         StudentStatus @default(ACTIVE)
   enrollmentDate DateTime      @default(now())
+
+  phoneNumber    String?
+  avatar         String?
+  address        String?
+
+  userId         String? @unique
+  user           User?         @relation(fields: [userId], references: [id])
 
   parentId       String
   parent         Parent        @relation(fields: [parentId], references: [id])

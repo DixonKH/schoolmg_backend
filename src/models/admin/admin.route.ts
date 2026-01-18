@@ -27,13 +27,6 @@ router.get(
   adminController.getUserById
 );
 
-// router.put(
-//   "/dashboard/users/:id",
-//   authMiddleware,
-//   roleMiddleware("ADMIN"),
-//   adminController.updateUserRole
-// );
-
 router.delete(
   "/dashboard/user_delete/:id",
   authMiddleware,

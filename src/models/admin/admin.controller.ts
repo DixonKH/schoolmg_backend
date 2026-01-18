@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { AdminService } from "./admin.service";
-import { PrismaClient, User } from "../../generated/prisma";
-import { ApiResponse, AuthResponse } from "../../types/response.type";
+import { PrismaClient } from "../../generated/prisma";
 
 const prisma = new PrismaClient();
 const adminService = new AdminService(prisma);
 
 export class AdminController {
+  
   async getDashboardStats(req: Request, res: Response, next: NextFunction) {
     try {
       const { totalUsers, roleStats } = await adminService.getDashboardStats();
