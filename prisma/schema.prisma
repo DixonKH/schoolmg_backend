@@ -69,6 +69,9 @@ model Staff {
   fullName  String
   phone     String?
   position  String?
+  avatar         String?
+  address        String?
+  
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
 
@@ -101,13 +104,13 @@ model Lead {
 model Student {
   id             String        @id @default(uuid())
   fullName       String
-  birthDate      DateTime
+  birthDate      String
   status         StudentStatus @default(ACTIVE)
-  parentName     String
+  parentName     String?
   enrollmentDate DateTime      @default(now())
 
-  phoneNumber    String
-  parentPhone    String
+  phone          String?
+  parentPhone    String?
   avatar         String?
   address        String?
 
@@ -129,9 +132,13 @@ model Student {
 ////////////////////
 
 model Teacher {
-  id        String   @id @default(uuid())
-  fullName  String
-  phone     String?
+  id             String   @id @default(uuid())
+  fullName       String
+  status         StudentStatus @default(ACTIVE)
+  phone          String?
+  birthDate      String?
+  avatar         String?
+  address        String?
 
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])

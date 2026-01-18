@@ -21,7 +21,7 @@ router.get(
 );
 
 router.get(
-  "/dashboard/users/:id",
+  "/dashboard/users/:id", 
   authMiddleware,
   roleMiddleware("ADMIN"),
   adminController.getUserById
@@ -35,10 +35,17 @@ router.delete(
 );
 
 router.post(
-  "/dashboard/user_create",
+  "/create_student",
   authMiddleware,
   roleMiddleware("ADMIN"),
-  adminController.createUser
+  adminController.createStudent
+);
+
+router.post(
+  "/create_teacher",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  adminController.createTeacher
 );
 
 export default router;

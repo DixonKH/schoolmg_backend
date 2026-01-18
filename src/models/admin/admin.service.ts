@@ -1,5 +1,10 @@
-import { Prisma, PrismaClient, User } from "../../generated/prisma";
-import { CreateUserDTO } from "../../types/admin.dto";
+import { Prisma, PrismaClient, User, UserRole } from "../../generated/prisma";
+import {
+  CreateStudentDTO,
+  CreateTeacherDTO,
+  StudentResponse,
+  TeacherResponse,
+} from "../../types/admin.dto";
 import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 
@@ -25,14 +30,19 @@ export class AdminService {
   async getAllUsers(
     page: number,
     limit: number,
-    search?: string
+    search?: string,
   ): Promise<PaginatedResponse<PublicUser>> {
     const skip = (page - 1) * limit;
     const where: Prisma.UserWhereInput = search
       ? {
           OR: [
             { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
-            { username: { contains: search, mode: Prisma.QueryMode.insensitive } },
+            {
+              username: {
+                contains: search,
+                mode: Prisma.QueryMode.insensitive,
+              },
+            },
           ],
         }
       : {};
@@ -75,14 +85,14 @@ export class AdminService {
   async deleteUser(id: string): Promise<PublicUser> {
     const deletedUser = await this.prisma.user.update({
       where: { id },
-      data: {isDeleted: true},
+      data: { isDeleted: true },
       select: {
-      id: true,
-      email: true,
-      username: true,
-      role: true,
-      createdAt: true
-    }
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        createdAt: true,
+      },
     });
     if (!deletedUser) {
       throw new Error("User not found");
@@ -93,18 +103,69 @@ export class AdminService {
     return deletedUser;
   }
 
-  async createUser(data: CreateUserDTO): Promise<PublicUser> {
+  async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
     const hashed = await bcrypt.hash(data.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        email: data.email,
-        username: data.username,
-        role: data.role,
-        password: hashed,
-      },
-    });
+    
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          username: data.username,
+          password: hashed,
+          role: UserRole.STUDENT,
+        },
+      });
 
-    console.log("user: ", user);
-    return user;
+      const student = await prisma.student.create({
+        data: {
+          userId: user.id,
+          fullName: data.fullName,
+          birthDate: data.birthDate,
+          parentName: data.parentName,
+          phone: data.phone,
+        },
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: student.fullName,
+        birthDate: student.birthDate,
+        parentName: student.parentName ?? undefined,
+        phone: student.phone ?? undefined,
+      };
+    });
+  }
+
+  async createTeacher(data: CreateTeacherDTO): Promise<TeacherResponse> {
+       const hashed = await bcrypt.hash(data.password, 10);
+
+      return await this.prisma.$transaction(async (prisma) => {
+        const user = await prisma.user.create({
+          data: {
+            email: data.email,
+            username: data.username,
+            password: hashed,
+            role: UserRole.TEACHER,
+          }
+        });
+
+        const teacher = await prisma.teacher.create({
+          data: {
+            userId: user.id,
+            fullName: data.fullName,
+            phone: data.phone
+          }
+        });
+
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          fullName: teacher.fullName,
+          phone: teacher.phone || undefined
+        }
+      });
   }
 }
