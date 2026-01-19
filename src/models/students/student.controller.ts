@@ -3,6 +3,7 @@ import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
 import { UpdateUserDTO } from "../../types/update.dto";
+import cloudinary from "../../config/cloudinary";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
@@ -42,12 +43,19 @@ export class StudentController {
     if (!req.file) {
       return res.status(400).json({ message: "Avatar not found" });
     }
-    const avatarUrl = `/uploads/${req.file.filename}`;
+
+    if (!req.file.mimetype.startsWith("image/")) {
+       throw new Error("Only images allowed");
+    }
+
+    const avatarUrl = req.file.path;
+     const publicId = req.file.filename;
     console.log("avatarUrl: ", avatarUrl);
 
     try {
       const user = await studentService.updateProfile(userId, {
-        avatar: avatarUrl,
+         avatar: avatarUrl,
+         avatarPublicId: publicId
       });
 
       return res.status(200).json({

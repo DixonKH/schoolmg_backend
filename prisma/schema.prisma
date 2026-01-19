@@ -112,6 +112,7 @@ model Student {
   phone          String?
   parentPhone    String?
   avatar         String?
+  avatarPublicId String?
   address        String?
 
   userId         String? @unique
@@ -138,6 +139,7 @@ model Teacher {
   phone          String?
   birthDate      String?
   avatar         String?
+  avatarPublicId String?
   address        String?
 
   userId    String   @unique

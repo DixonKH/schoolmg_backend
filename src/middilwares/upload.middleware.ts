@@ -1,21 +1,20 @@
 import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary";
 
-const storage = multer.diskStorage({
-    destination: "./uploads",
-    filename: (req, file, cb) => {
-        const unique = Date.now() + "-" + file.originalname;
-        cb(null, unique);
-    }
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req: any, file) => {
+    return {
+      folder: `school/${req.user?.role}`,
+      format: file.mimetype.split("/")[1],
+      public_id: `${req.user?.id}`,
+      transformation: [
+    { width: 300, height: 300, crop: "fill" },
+    { quality: "auto", fetch_format: "auto" }
+  ],
+    };
+  },
 });
 
-export const upload = multer({
-    storage,
-    limits: { fileSize: 1024 * 1024 * 5 },
-    fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith("image")) {
-            cb(new Error("Only images allowed"));
-        } else {
-            cb(null, true);
-        }
-    }
-});
+export const upload = multer({ storage });

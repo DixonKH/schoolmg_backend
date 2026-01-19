@@ -1,31 +1,40 @@
+import cloudinary from "../../config/cloudinary";
 import { PrismaClient, Student } from "../../generated/prisma";
 import { UpdateUserDTO } from "../../types/update.dto";
 
-
-
 export class StudentService {
-    constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) {}
 
-    async getMe(userId: string): Promise<Student> {
-        const student = await this.prisma.student.findUnique({
-            where: { userId }
-        })
-     if(!student) {
-        throw new Error("Student not found")
-     }
-     return student;
+  async getMe(userId: string): Promise<Student> {
+    const student = await this.prisma.student.findUnique({
+      where: { userId },
+    });
+    if (!student) {
+      throw new Error("Student not found");
+    }
+    return student;
+  }
+
+  async updateProfile(userId: string, data: UpdateUserDTO): Promise<Student> {
+    const user = await this.prisma.student.findUnique({
+      where: { userId },
+    });
+    if (!user) throw new Error("Student not found");
+
+    if (data.avatarPublicId && user.avatarPublicId) {
+      await cloudinary.uploader.destroy(user.avatarPublicId);
     }
 
-    async updateProfile(userId: string, data: UpdateUserDTO): Promise<Student> {
-        const cleanData: Partial<UpdateUserDTO> = Object.fromEntries(
-            Object.entries(data).filter(([_, value]) => value !== undefined)
-        )
-         
-          const student = await this.prisma.student.update({
-              where: { userId },
-              data: cleanData
-          });
-        console.log("student: ", student);
-          return student
-    }
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, v]) => v !== undefined),
+    );
+
+    const student = await this.prisma.student.update({
+      where: { userId },
+      data: cleanData,
+    });
+
+    console.log("student: ", student);
+    return student;
+  }
 }

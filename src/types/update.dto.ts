@@ -3,6 +3,7 @@ export interface UpdateUserDTO {
     parentName?: string;
     phone?: string;
     parentPhone?: string;
+    avatarPublicId?: string;
     avatar?: string;
     address?: string;
 }
