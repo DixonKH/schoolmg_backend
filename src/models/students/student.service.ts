@@ -1,6 +1,6 @@
 import cloudinary from "../../config/cloudinary";
 import { PrismaClient, Student } from "../../generated/prisma";
-import { UpdateUserDTO } from "../../types/update.dto";
+import { UpdateStudentDTO } from "../../types/student.dto";
 
 export class StudentService {
   constructor(private prisma: PrismaClient) {}
@@ -15,7 +15,7 @@ export class StudentService {
     return student;
   }
 
-  async updateProfile(userId: string, data: UpdateUserDTO): Promise<Student> {
+  async updateProfile(userId: string, data: UpdateStudentDTO): Promise<Student> {
     const user = await this.prisma.student.findUnique({
       where: { userId },
     });
@@ -36,5 +36,5 @@ export class StudentService {
 
     console.log("student: ", student);
     return student;
-  }
+  } 
 }

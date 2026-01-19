@@ -1,12 +1,19 @@
-import { Prisma, PrismaClient, User, UserRole } from "../../generated/prisma";
 import {
-  CreateStudentDTO,
+  Class,
+  Prisma,
+  PrismaClient,
+  Student,
+  User,
+  UserRole,
+} from "../../generated/prisma";
+import {
   CreateTeacherDTO,
-  StudentResponse,
   TeacherResponse,
-} from "../../types/admin.dto";
+} from "../../types/teacher.dto";
 import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
+import { ClassDTO } from "../../types/class.dto";
+import { CreateStudentDTO, StudentResponse } from "../../types/student.dto";
 
 export class AdminService {
   constructor(private prisma: PrismaClient) {}
@@ -105,7 +112,7 @@ export class AdminService {
 
   async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
     const hashed = await bcrypt.hash(data.password, 10);
-    
+
     return await this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.create({
         data: {
@@ -139,33 +146,90 @@ export class AdminService {
   }
 
   async createTeacher(data: CreateTeacherDTO): Promise<TeacherResponse> {
-       const hashed = await bcrypt.hash(data.password, 10);
+    const hashed = await bcrypt.hash(data.password, 10);
 
-      return await this.prisma.$transaction(async (prisma) => {
-        const user = await prisma.user.create({
-          data: {
-            email: data.email,
-            username: data.username,
-            password: hashed,
-            role: UserRole.TEACHER,
-          }
-        });
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          username: data.username,
+          password: hashed,
+          role: UserRole.TEACHER,
+        },
+      });
 
-        const teacher = await prisma.teacher.create({
-          data: {
-            userId: user.id,
-            fullName: data.fullName,
-            phone: data.phone
-          }
-        });
-
-        return {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          fullName: teacher.fullName,
-          phone: teacher.phone || undefined
+      const teacher = await prisma.teacher.create({
+        data: {
+          userId: user.id,
+          fullName: data.fullName,
+          phone: data.phone,
         }
       });
+
+      const subjectRecords = await Promise.all(
+        data.subjects.map(async (name) => {
+          return await prisma.subject.upsert({
+            where: {name},
+            update: {
+            teacherId: teacher.id, // agar oldin bo‘lsa update
+            },
+            create: {
+              name,
+              teacherId: teacher.id,
+              classId: data.classId
+            },
+          })
+        })
+      )
+
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: teacher.fullName,
+        phone: teacher.phone || undefined,
+        subjects: subjectRecords.map(s => s.name)
+      };
+    });
+  }
+
+  async getStudentsByClass(classId: string): Promise<Student[]> {
+    const students: Student[] = await this.prisma.student.findMany({
+      where: { classId },
+      include: {
+        class: true,
+        user: {
+          select: {
+            email: true,
+            username: true,
+          },
+        },
+      },
+    });
+    if (!students) {
+      throw new Error("Students not found");
+    }
+    console.log("students: ", students);
+    return students;
+  }
+
+  async createClass(data: ClassDTO): Promise<Class> {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: data.teacherId },
+    });
+
+    if (!teacher) {
+      throw new Error("Teacher not found");
+    }
+
+    const class_: Class = await this.prisma.class.create({
+      data: {
+        name: data.name,
+        capacity: data.capacity,
+        teacherId: data.teacherId,
+      },
+    });
+    console.log("class: ", class_);
+    return class_;
   }
 }

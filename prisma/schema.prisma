@@ -174,10 +174,10 @@ model Class {
 
 model Subject {
   id        String   @id @default(uuid())
-  name      String
+  name      String   @unique
 
-  classId   String
-  class     Class    @relation(fields: [classId], references: [id])
+  classId   String?
+  class     Class?    @relation(fields: [classId], references: [id])
 
   teacherId String
   teacher   Teacher  @relation(fields: [teacherId], references: [id])

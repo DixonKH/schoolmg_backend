@@ -2,8 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
-import { UpdateUserDTO } from "../../types/update.dto";
-import cloudinary from "../../config/cloudinary";
+import { UpdateStudentDTO } from "../../types/student.dto";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
@@ -27,7 +26,7 @@ export class StudentController {
     const userId = req.user!.id;
 
     try {
-      const user = await studentService.updateProfile(userId, req.body as UpdateUserDTO);
+      const user = await studentService.updateProfile(userId, req.body as UpdateStudentDTO);
 
       return res.status(200).json({
         success: true,

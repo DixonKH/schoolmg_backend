@@ -21,4 +21,8 @@ router.post("/create_student", adminController.createStudent);
 
 router.post("/create_teacher", adminController.createTeacher);
 
+router.get("/students/:classId", adminController.getStudentsByClass);
+
+router.post("/create_class", adminController.createClass);
+
 export default router;
