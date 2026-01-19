@@ -59,6 +59,7 @@ export class StudentController {
 
       return res.status(200).json({
         success: true,
+        message: "Avatar updated successfully",
         data: user,
       });
     } catch (error: any) {

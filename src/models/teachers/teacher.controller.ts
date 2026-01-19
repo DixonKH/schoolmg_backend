@@ -35,4 +35,34 @@ export class TeacherController {
           next(error);
         }
     }
+
+    async updateAvatar(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | undefined> {
+        const teacherId = req.user!.id;
+        if(!req.file) {
+            return res.status(400).json({message: "Avatar not found"});
+        }
+
+        if(!req.file.mimetype.startsWith("image/")) {
+            throw new Error("Only images allowed");
+        }
+
+        const avatarUrl = req.file.path;
+        const publicId = req.file.filename;
+        console.log("avatarUrl: ", avatarUrl);
+
+        try {
+            const teacher = await teacherService.updateProfile(teacherId, {
+                avatar: avatarUrl,
+                avatarPublicId: publicId
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Avatar updated successfully",
+                data: teacher,
+            });
+        } catch (error: any) {
+            next(error);
+        }
+    }
 }

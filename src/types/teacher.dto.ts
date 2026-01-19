@@ -23,6 +23,7 @@ export interface UpdateTeacherDTO {
   subjects?: string[];
   birthDate?: string;
   avatar?: string;
+  avatarPublicId?: string;
   address?: string;
   classes?: string[];
 }

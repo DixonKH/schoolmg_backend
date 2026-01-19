@@ -1,3 +1,4 @@
+import cloudinary from "../../config/cloudinary";
 import { PrismaClient, Teacher } from "../../generated/prisma";
 import { UpdateTeacherDTO } from "../../types/teacher.dto";
 
@@ -29,6 +30,10 @@ export class TeacherService {
       where: { userId: teacherId },
     });
     if (!teacher) throw new Error("Teacher not found");
+
+    if(data.avatarPublicId && teacher.avatarPublicId) {
+      await cloudinary.uploader.destroy(teacher.avatarPublicId);
+    }
 
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([_, v]) => v !== undefined),
