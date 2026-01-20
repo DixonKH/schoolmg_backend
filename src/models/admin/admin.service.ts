@@ -7,10 +7,7 @@ import {
   User,
   UserRole,
 } from "../../generated/prisma";
-import {
-  CreateTeacherDTO,
-  TeacherResponse,
-} from "../../types/teacher.dto";
+import { CreateTeacherDTO, TeacherResponse } from "../../types/teacher.dto";
 import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 import { ClassDTO } from "../../types/class.dto";
@@ -111,6 +108,7 @@ export class AdminService {
     return deletedUser;
   }
 
+  // student
   async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
     const hashed = await bcrypt.hash(data.password, 10);
 
@@ -131,6 +129,7 @@ export class AdminService {
           birthDate: data.birthDate,
           parentName: data.parentName,
           phone: data.phone,
+          classId: data.classId,
         },
       });
 
@@ -142,10 +141,12 @@ export class AdminService {
         birthDate: student.birthDate,
         parentName: student.parentName ?? undefined,
         phone: student.phone ?? undefined,
+        classId: student.classId
       };
     });
   }
 
+  // teacher
   async createTeacher(data: CreateTeacherDTO): Promise<TeacherResponse> {
     const hashed = await bcrypt.hash(data.password, 10);
 
@@ -164,24 +165,29 @@ export class AdminService {
           userId: user.id,
           fullName: data.fullName,
           phone: data.phone,
-        }
+        },
       });
 
       const subjectRecords = await Promise.all(
         data.subjects.map(async (name) => {
           return await prisma.subject.upsert({
-            where: {name},
+            where: {
+              name_classId: {
+                name,
+                classId: data.classId,
+              },
+            },
             update: {
-            teacherId: teacher.id, // agar oldin bo‘lsa update
+              teacherId: teacher.id, // agar oldin bo‘lsa update
             },
             create: {
               name,
               teacherId: teacher.id,
-              classId: data.classId
+              classId: data.classId,
             },
-          })
-        })
-      )
+          });
+        }),
+      );
 
       return {
         id: user.id,
@@ -189,12 +195,14 @@ export class AdminService {
         username: user.username,
         fullName: teacher.fullName,
         phone: teacher.phone || undefined,
-        subjects: subjectRecords.map(s => s.name)
+        subjects: subjectRecords.map((s) => s.name),
+        classId: data.classId,
       };
     });
   }
 
-  async getStudentsByClass(classId: string): Promise<Student[]> {
+  // student
+  async getAllStudentsByClass(classId: string): Promise<Student[]> {
     const students: Student[] = await this.prisma.student.findMany({
       where: { classId },
       include: {
@@ -234,40 +242,41 @@ export class AdminService {
     return class_;
   }
 
+  // subject
   async addSubject(teacherId: string, subject: string): Promise<Subject> {
-       const teacher = await this.prisma.teacher.findUnique({
-        where: {id: teacherId},
-        include: {subjects: true}
-       })
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      include: { subjects: true },
+    });
 
-      if(!teacher) throw new Error("Teacher not found");
+    if (!teacher) throw new Error("Teacher not found");
 
-      if(teacher.subjects.some(s => s.name === subject)) {
-          throw new Error("Subject already exists");
-      }
-      
-      const newSubject = await this.prisma.subject.create({
-        data: {
-          name: subject,
-          teacherId
-        }
-      });
+    if (teacher.subjects.some((s) => s.name === subject)) {
+      throw new Error("Subject already exists");
+    }
 
-      console.log("newSubject: ", newSubject);
-      return newSubject
+    const newSubject = await this.prisma.subject.create({
+      data: {
+        name: subject,
+        teacherId,
+      },
+    });
+
+    console.log("newSubject: ", newSubject);
+    return newSubject;
   }
 
   async deleteSubject(subjectId: string) {
     const subject = await this.prisma.subject.findUnique({
-      where: {id: subjectId}
+      where: { id: subjectId },
     });
 
-    if(!subject) throw new Error("Subject not found");
+    if (!subject) throw new Error("Subject not found");
 
-     await this.prisma.subject.delete({
-      where: {id: subjectId}
+    await this.prisma.subject.delete({
+      where: { id: subjectId },
     });
 
-    return {message: "Subject deleted"}
+    return { message: "Subject deleted" };
   }
 }

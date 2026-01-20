@@ -7,6 +7,7 @@ export interface CreateStudentDTO {
   birthDate: string;
   parentName?: string;
   phone?: string;
+  classId: string;
 }
 
 export interface StudentResponse {
@@ -17,6 +18,7 @@ export interface StudentResponse {
   birthDate: string;
   parentName?: string;
   phone?: string;
+  classId: string;
 }
 
 export interface UpdateStudentDTO {

@@ -85,7 +85,7 @@ export class AdminController {
       next(error);
     }
   }
-
+// student
   async createStudent(
     req: Request,
     res: Response,
@@ -106,6 +106,7 @@ export class AdminController {
     }
   }
 
+  // teacher
   async createTeacher(
     req: Request,
     res: Response,
@@ -126,7 +127,8 @@ export class AdminController {
     }
   }
 
-  async getStudentsByClass(
+// class
+  async getAllStudentsByClass(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -134,7 +136,7 @@ export class AdminController {
     try {
       const { classId } = req.params;
       const students: Student[] =
-        await adminService.getStudentsByClass(classId);
+        await adminService.getAllStudentsByClass(classId);
 
       return res.status(200).json({
         success: true,
@@ -168,6 +170,7 @@ export class AdminController {
     }
   }
 
+  // subject
   async addSubject(
     req: Request,
     res: Response,

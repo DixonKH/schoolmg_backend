@@ -36,5 +36,5 @@ export class StudentService {
 
     console.log("student: ", student);
     return student;
-  } 
+  }  
 }

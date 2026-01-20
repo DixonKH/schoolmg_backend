@@ -5,7 +5,7 @@ export interface CreateTeacherDTO {
   fullName: string;
   phone?: string;
   subjects: string[];
-  classId?: string;
+  classId: string;
 }
 
 export interface TeacherResponse {
@@ -15,6 +15,7 @@ export interface TeacherResponse {
   fullName: string;
   phone?: string;
   subjects: string[];
+  classId: string;
 }
 
 export interface UpdateTeacherDTO {

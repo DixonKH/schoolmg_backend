@@ -30,6 +30,12 @@ enum StudentStatus {
   LEFT
 }
 
+enum GradeType {
+  DAILY
+  MIDTERM
+  FINAL
+}
+
 enum PaymentStatus {
   PENDING
   PAID
@@ -42,9 +48,6 @@ enum PaymentMethod {
   TRANSFER
 }
 
-////////////////////
-/// USER (AUTH)
-////////////////////
 
 model User {
   id        String   @id @default(uuid())
@@ -97,10 +100,6 @@ model Lead {
   updatedAt    DateTime   @updatedAt
 }
 
-////////////////////
-/// STUDENT
-////////////////////
-
 model Student {
   id             String        @id @default(uuid())
   fullName       String
@@ -118,19 +117,16 @@ model Student {
   userId         String? @unique
   user           User?         @relation(fields: [userId], references: [id])
 
-  classId        String?
-  class          Class?        @relation(fields: [classId], references: [id])
+  classId        String
+  class          Class        @relation(fields: [classId], references: [id])
 
   payments       Payment[]
   attendances    Attendance[]
   grades         Grade[]
+  journalEntries JournalEntry[]
 
   createdAt      DateTime @default(now())
 }
-
-////////////////////
-/// TEACHER
-////////////////////
 
 model Teacher {
   id             String   @id @default(uuid())
@@ -147,11 +143,8 @@ model Teacher {
 
   classes   Class[]
   subjects  Subject[]
+  journals Journal[]
 }
-
-////////////////////
-/// CLASS
-////////////////////
 
 model Class {
   id        String   @id @default(uuid())
@@ -164,17 +157,15 @@ model Class {
   students  Student[]
   subjects  Subject[]
   schedule  Schedule[]
+  attendance  Attendance[]
+  journals Journal[]
 
   createdAt DateTime @default(now())
 }
 
-////////////////////
-/// SUBJECT
-////////////////////
-
 model Subject {
   id        String   @id @default(uuid())
-  name      String   @unique
+  name      String   
 
   classId   String?
   class     Class?    @relation(fields: [classId], references: [id])
@@ -183,11 +174,11 @@ model Subject {
   teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   grades    Grade[]
-}
+  attendance  Attendance[]
+  journals Journal[]
 
-////////////////////
-/// ATTENDANCE
-////////////////////
+  @@unique([name, classId])
+}
 
 model Attendance {
   id        String   @id @default(uuid())
@@ -196,15 +187,23 @@ model Attendance {
 
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
-}
 
-////////////////////
-/// GRADES
-////////////////////
+  classId   String?
+  class     Class?   @relation(fields: [classId], references: [id])
+
+  subjectId String?
+  subject   Subject?   @relation(fields: [subjectId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, studentId, subjectId])
+}
 
 model Grade {
   id        String   @id @default(uuid())
   value     Float
+  type      GradeType?
+  date      DateTime?
 
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
@@ -213,9 +212,46 @@ model Grade {
   subject   Subject  @relation(fields: [subjectId], references: [id])
 }
 
-////////////////////
-/// PAYMENT
-////////////////////
+model Journal {
+  id        String @id @default(uuid())
+
+  date      DateTime
+
+  classId   String
+  subjectId String
+  teacherId String
+
+  class     Class    @relation(fields: [classId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+
+  entries   JournalEntry[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, classId, subjectId])
+}
+
+model JournalEntry {
+  id        String @id @default(uuid())
+
+  journalId String
+  studentId String
+
+  date      DateTime
+
+  present   Boolean?
+  grade     Float?
+  gradeType GradeType?
+
+  journal   Journal   @relation(fields: [journalId], references: [id])
+  student   Student   @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([journalId, studentId])
+}
+
 
 model Payment {
   id        String         @id @default(uuid())
@@ -229,10 +265,6 @@ model Payment {
 
   createdAt DateTime @default(now())
 }
-
-////////////////////
-/// SCHEDULE
-////////////////////
 
 model Schedule {
   id        String   @id @default(uuid())
