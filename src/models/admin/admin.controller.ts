@@ -1,18 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { AdminService } from "./admin.service";
 import { Class, PrismaClient, Student, User } from "../../generated/prisma";
-import {
-  CreateTeacherDTO,
-  TeacherResponse,
-} from "../../types/teacher.dto";
+import { CreateTeacherDTO, TeacherResponse } from "../../types/teacher.dto";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 import { CreateStudentDTO, StudentResponse } from "../../types/student.dto";
+import { success } from "zod";
 
 const prisma = new PrismaClient();
 const adminService = new AdminService(prisma);
 
 export class AdminController {
-  
   async getDashboardStats(
     req: Request,
     res: Response,
@@ -165,6 +162,26 @@ export class AdminController {
         success: true,
         message: "Class created successfully",
         data: class_,
+      });
+    } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async addSubject(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { teacherId } = req.params;
+      const { subject } = req.body;
+      const newSubject = await adminService.addSubject(teacherId, subject);
+
+      return res.status(200).json({
+        success: true,
+        message: "Subject created successfully",
+        data: newSubject,
       });
     } catch (e: any) {
       next(e);

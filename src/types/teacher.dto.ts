@@ -20,10 +20,10 @@ export interface TeacherResponse {
 export interface UpdateTeacherDTO {
   fullName?: string;
   phone?: string;
-  subjects?: string[];
   birthDate?: string;
   avatar?: string;
   avatarPublicId?: string;
   address?: string;
+  subjects?: string[];
   classes?: string[];
 }

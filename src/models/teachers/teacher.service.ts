@@ -1,6 +1,13 @@
 import cloudinary from "../../config/cloudinary";
-import { PrismaClient, Teacher } from "../../generated/prisma";
+import { Prisma, PrismaClient, Teacher } from "../../generated/prisma";
 import { UpdateTeacherDTO } from "../../types/teacher.dto";
+
+type TeacherWithRelations = Prisma.TeacherGetPayload<{
+  include: {
+    subjects: true,
+    classes: true
+  }
+}>
 
 export class TeacherService {
   constructor(private prisma: PrismaClient) {}
@@ -26,12 +33,13 @@ export class TeacherService {
     teacherId: string,
     data: UpdateTeacherDTO,
   ): Promise<Teacher> {
+    
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: teacherId },
     });
     if (!teacher) throw new Error("Teacher not found");
 
-    if(data.avatarPublicId && teacher.avatarPublicId) {
+    if(data.avatar && teacher.avatarPublicId) {
       await cloudinary.uploader.destroy(teacher.avatarPublicId);
     }
 

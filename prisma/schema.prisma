@@ -180,7 +180,7 @@ model Subject {
   class     Class?    @relation(fields: [classId], references: [id])
 
   teacherId String
-  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   grades    Grade[]
 }
