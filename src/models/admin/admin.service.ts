@@ -4,6 +4,7 @@ import {
   PrismaClient,
   Student,
   Subject,
+  Teacher,
   User,
   UserRole,
 } from "../../generated/prisma";
@@ -88,7 +89,15 @@ export class AdminService {
   }
 
   async deleteUser(id: string): Promise<PublicUser> {
-    const deletedUser = await this.prisma.user.update({
+
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.findUnique({
+      where: { id },
+    });
+    
+    if (!user) throw new Error("User not found");
+
+    const deletedUser = await prisma.user.update({
       where: { id },
       data: { isDeleted: true },
       select: {
@@ -99,51 +108,24 @@ export class AdminService {
         createdAt: true,
       },
     });
-    if (!deletedUser) {
-      throw new Error("User not found");
+
+    if(user.role === UserRole.TEACHER) {
+      await prisma.teacher.update({
+        where: { userId: id },
+        data: { status: "LEFT" },
+      })
+    }
+
+    if(user.role === UserRole.STUDENT) {
+      await prisma.student.update({
+        where: { userId: id },
+        data: { status: "LEFT" },
+      })
     }
 
     console.log("deletedUser: ", deletedUser);
-
     return deletedUser;
-  }
-
-  // student
-  async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
-    const hashed = await bcrypt.hash(data.password, 10);
-
-    return await this.prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.create({
-        data: {
-          email: data.email,
-          username: data.username,
-          password: hashed,
-          role: UserRole.STUDENT,
-        },
-      });
-
-      const student = await prisma.student.create({
-        data: {
-          userId: user.id,
-          fullName: data.fullName,
-          birthDate: data.birthDate,
-          parentName: data.parentName,
-          phone: data.phone,
-          classId: data.classId,
-        },
-      });
-
-      return {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        fullName: student.fullName,
-        birthDate: student.birthDate,
-        parentName: student.parentName ?? undefined,
-        phone: student.phone ?? undefined,
-        classId: student.classId
-      };
-    });
+    })
   }
 
   // teacher
@@ -201,7 +183,55 @@ export class AdminService {
     });
   }
 
+  async getAllTeachers(): Promise<Teacher[]> {
+    const teachers = await this.prisma.teacher.findMany({
+      include: {
+        subjects: true,
+        classes: true,
+      },
+    });
+    console.log("teachers: ", teachers);
+    return teachers;
+  }
+
   // student
+  async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
+    const hashed = await bcrypt.hash(data.password, 10);
+
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          username: data.username,
+          password: hashed,
+          role: UserRole.STUDENT,
+        },
+      });
+
+      const student = await prisma.student.create({
+        data: {
+          userId: user.id,
+          fullName: data.fullName,
+          birthDate: data.birthDate,
+          parentName: data.parentName,
+          phone: data.phone,
+          classId: data.classId,
+        },
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: student.fullName,
+        birthDate: student.birthDate,
+        parentName: student.parentName ?? undefined,
+        phone: student.phone ?? undefined,
+        classId: student.classId,
+      };
+    });
+  }
+
   async getAllStudentsByClass(classId: string): Promise<Student[]> {
     const students: Student[] = await this.prisma.student.findMany({
       where: { classId },
@@ -223,19 +253,21 @@ export class AdminService {
   }
 
   async createClass(data: ClassDTO): Promise<Class> {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id: data.teacherId },
-    });
+    if (data.teacherId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { id: data.teacherId },
+      });
 
-    if (!teacher) {
-      throw new Error("Teacher not found");
+      if (!teacher) {
+        throw new Error("Teacher not found");
+      }
     }
 
     const class_: Class = await this.prisma.class.create({
       data: {
         name: data.name,
         capacity: data.capacity,
-        teacherId: data.teacherId,
+        teacherId: data.teacherId ?? null,
       },
     });
     console.log("class: ", class_);

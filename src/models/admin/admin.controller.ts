@@ -127,6 +127,19 @@ export class AdminController {
     }
   }
 
+  async getAllTeachers(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    try {
+      const teachers = await adminService.getAllTeachers();
+      return res.status(200).json({
+        success: true,
+        data: teachers,
+      });
+
+    }catch(error: any) {
+      next(error);
+    }
+  }
+
 // class
   async getAllStudentsByClass(
     req: Request,

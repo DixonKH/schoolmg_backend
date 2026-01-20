@@ -151,8 +151,8 @@ model Class {
   name      String
   capacity  Int
 
-  teacherId String
-  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId String?
+  teacher   Teacher?  @relation(fields: [teacherId], references: [id])
 
   students  Student[]
   subjects  Subject[]
