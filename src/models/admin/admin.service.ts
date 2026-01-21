@@ -2,6 +2,7 @@ import {
   Class,
   Prisma,
   PrismaClient,
+  Schedule,
   Student,
   Subject,
   Teacher,
@@ -13,6 +14,7 @@ import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 import { ClassDTO } from "../../types/class.dto";
 import { CreateStudentDTO, StudentResponse } from "../../types/student.dto";
+import { CreateScheduleDto } from "../../types/schedule.dto";
 
 export class AdminService {
   constructor(private prisma: PrismaClient) {}
@@ -89,43 +91,42 @@ export class AdminService {
   }
 
   async deleteUser(id: string): Promise<PublicUser> {
-
     return await this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findUnique({
-      where: { id },
+        where: { id },
+      });
+
+      if (!user) throw new Error("User not found");
+
+      const deletedUser = await prisma.user.update({
+        where: { id },
+        data: { isDeleted: true },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      if (user.role === UserRole.TEACHER) {
+        await prisma.teacher.update({
+          where: { userId: id },
+          data: { status: "LEFT" },
+        });
+      }
+
+      if (user.role === UserRole.STUDENT) {
+        await prisma.student.update({
+          where: { userId: id },
+          data: { status: "LEFT" },
+        });
+      }
+
+      console.log("deletedUser: ", deletedUser);
+      return deletedUser;
     });
-    
-    if (!user) throw new Error("User not found");
-
-    const deletedUser = await prisma.user.update({
-      where: { id },
-      data: { isDeleted: true },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    if(user.role === UserRole.TEACHER) {
-      await prisma.teacher.update({
-        where: { userId: id },
-        data: { status: "LEFT" },
-      })
-    }
-
-    if(user.role === UserRole.STUDENT) {
-      await prisma.student.update({
-        where: { userId: id },
-        data: { status: "LEFT" },
-      })
-    }
-
-    console.log("deletedUser: ", deletedUser);
-    return deletedUser;
-    })
   }
 
   // teacher
@@ -252,6 +253,7 @@ export class AdminService {
     return students;
   }
 
+  // class
   async createClass(data: ClassDTO): Promise<Class> {
     if (data.teacherId) {
       const teacher = await this.prisma.teacher.findUnique({
@@ -310,5 +312,50 @@ export class AdminService {
     });
 
     return { message: "Subject deleted" };
+  }
+
+  // schedule
+  async createSchedule(data: CreateScheduleDto): Promise<Schedule> {
+    const class_ = await this.prisma.class.findUnique({
+      where: { id: data.classId },
+    });
+    if (!class_) throw new Error("Class not found");
+
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: data.teacherId },
+    });
+    if (!teacher) throw new Error("Teacher not found");
+
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: data.subjectId },
+    });
+    if (!subject) throw new Error("Subject not found");
+
+    const existing = await this.prisma.schedule.findFirst({
+      where: {
+        classId: data.classId,
+        dayOfWeek: data.dayOfWeek,
+        startTime: data.startTime,
+      },
+    });
+    if (existing)
+      throw new Error(
+        "Schedule conflict: this class already has a lesson at this time",
+      );
+
+    const schedule = await this.prisma.schedule.create({
+      data: {
+        dayOfWeek: data.dayOfWeek,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        room: data.room,
+        teacherId: data.teacherId,
+        subjectId: data.subjectId,
+        classId: data.classId,
+      },
+    });
+
+    console.log("schedule: ", schedule);
+    return schedule;
   }
 }

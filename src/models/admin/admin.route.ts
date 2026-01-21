@@ -32,4 +32,7 @@ router.post("/create_class", adminController.createClass);
 // subject
 router.post("/add_subject/:teacherId", adminController.addSubject);
 
+// schedule
+router.post("/create_schedule", adminController.createSchedule);
+
 export default router;

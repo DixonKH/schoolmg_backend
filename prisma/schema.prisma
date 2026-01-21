@@ -48,6 +48,16 @@ enum PaymentMethod {
   TRANSFER
 }
 
+enum WeekDay {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+}
+
+
 
 model User {
   id        String   @id @default(uuid())
@@ -143,6 +153,7 @@ model Teacher {
 
   classes   Class[]
   subjects  Subject[]
+  schedule  Schedule[]
   journals Journal[]
 }
 
@@ -175,6 +186,7 @@ model Subject {
 
   grades    Grade[]
   attendance  Attendance[]
+  schedule  Schedule[]
   journals Journal[]
 
   @@unique([name, classId])
@@ -268,12 +280,25 @@ model Payment {
 
 model Schedule {
   id        String   @id @default(uuid())
-  dayOfWeek Int      // 1 - Monday, 7 - Sunday
+
+  dayOfWeek WeekDay      
   startTime String
   endTime   String
+  room      String
+
+  subjectId String  
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
 
   classId   String
   class     Class    @relation(fields: [classId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([teacherId, dayOfWeek])
+  @@unique([classId, dayOfWeek, startTime, endTime])
 }
 
 model Notification {

@@ -203,4 +203,19 @@ export class AdminController {
       next(e);
     }
   }
+
+  // schedule
+ async createSchedule(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+     try {
+          const schedule = await adminService.createSchedule(req.body);
+
+          return res.status(200).json({
+               success: true,
+               message: "Schedule created successfully",
+               data: schedule,
+          });
+     }catch(e) {
+      next(e);
+     }
+ }
 }
