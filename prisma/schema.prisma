@@ -226,8 +226,7 @@ model Grade {
 
 model Journal {
   id        String @id @default(uuid())
-
-  date      DateTime
+  date      String
 
   classId   String
   subjectId String
@@ -250,7 +249,7 @@ model JournalEntry {
   journalId String
   studentId String
 
-  date      DateTime
+  date      String
 
   present   Boolean?
   grade     Float?

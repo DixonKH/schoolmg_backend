@@ -8,3 +8,10 @@ const journalController = new JournalController();
 
 router.use(authMiddleware);
 
+router.post(
+  "/get_or_create",
+  roleMiddleware("TEACHER", "ADMIN"),
+  journalController.getOrCreateJournal,
+);
+
+export default router;

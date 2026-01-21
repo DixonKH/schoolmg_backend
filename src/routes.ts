@@ -6,6 +6,7 @@ import TeacherRoutes from "./models/teachers/teacher.route"
 import ClassRoutes from "./models/classes/class.route"
 import SubjectRoutes from "./models/subjects/subject.route"
 import ScheduleRoutes from "./models/schedule/schedule.route"
+import JournalRoutes from "./models/journal/journal.route"
 
 const router = Router();
 
@@ -16,6 +17,8 @@ router.use("/student", StudentRoutes);
 router.use("/class", ClassRoutes);
 router.use("/subject", SubjectRoutes);
 router.use("/schedule", ScheduleRoutes);
+router.use("/journal", JournalRoutes);
+
 
 
 export default router;
