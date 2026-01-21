@@ -14,10 +14,17 @@ router.post(
   subjectController.addSubject,
 );
 
+router.get(
+  "/get_subjects/:classId",
+  roleMiddleware("TEACHER", "ADMIN"),
+  subjectController.getAllSubjectsByClass,
+);
+
 router.delete(
   "/delete_subject/:subjectId",
   roleMiddleware("ADMIN"),
   subjectController.deleteSubject,
-);
+); 
+
 
 export default router;

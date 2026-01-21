@@ -40,4 +40,15 @@ export class SubjectService {
 
     return { message: "Subject deleted" };
   }
+
+  async getAllSubjectsByClass(classId: string) {
+    return await this.prisma.subject.findMany({
+      where: {classId},
+      include: {
+        teacher: {
+          select: {fullName: true}
+        }
+      }
+    })
+  }
 }

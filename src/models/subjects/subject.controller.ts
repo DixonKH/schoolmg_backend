@@ -41,4 +41,18 @@ export class SubjectController {
         next(e);
       }
     }
+
+    async getAllSubjectsByClass(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+      try {
+         const { classId } = req.params;
+         const subjects = await subjectService.getAllSubjectsByClass(classId);
+
+         return res.status(200).json({
+           success: true,
+           data: subjects,
+         });
+      }catch(e: any) {
+        next(e);
+      }
+    }
 }
