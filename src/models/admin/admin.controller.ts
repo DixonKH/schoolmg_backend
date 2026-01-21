@@ -183,6 +183,18 @@ export class AdminController {
     }
   }
 
+  async getAllClasses(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    try {
+      const classes = await adminService.getAllClasses();
+      return res.status(200).json({
+        success: true,
+        data: classes,
+      });
+    } catch (e: any) {
+      next(e);
+    }
+  }
+
   // subject
   async addSubject(
     req: Request,

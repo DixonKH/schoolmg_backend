@@ -28,6 +28,7 @@ router.get("/students/:classId", adminController.getAllStudentsByClass);
 
 // class
 router.post("/create_class", adminController.createClass);
+router.get("/get_classes", roleMiddleware("TEACHER", "ADMIN"), adminController.getAllClasses);
 
 // subject
 router.post("/add_subject/:teacherId", adminController.addSubject);
