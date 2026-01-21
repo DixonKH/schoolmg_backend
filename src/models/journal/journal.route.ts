@@ -14,4 +14,10 @@ router.post(
   journalController.getOrCreateJournal,
 );
 
+router.post(
+  "/create_entry/:id/entries",
+  roleMiddleware("ADMIN"),
+  journalController.createJournalEntry,
+);
+
 export default router;

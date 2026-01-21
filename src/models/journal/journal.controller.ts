@@ -20,4 +20,22 @@ export class JournalController {
             next(e);
           }
       }
+
+      async createJournalEntry(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+          try {
+            const journalEntry = req.body;
+            const journalId = req.params.id;
+            console.log("journalId: ", journalId);
+            const newJournalEntry = await journalService.createJournalEntry(journalId, journalEntry);
+            
+            return res.status(200).json({
+                success: true,
+                message: "Journal entry created successfully",
+                data: newJournalEntry,
+            });
+
+          }catch(e: any) {
+            next(e);
+          }
+      }
 }

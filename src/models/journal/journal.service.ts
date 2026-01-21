@@ -1,5 +1,5 @@
-import { Journal, PrismaClient } from "../../generated/prisma";
-import { JournalCreateDTO } from "../../types/journal.dto";
+import { Journal, JournalEntry, PrismaClient } from "../../generated/prisma";
+import { CreateJournalEntryDTO, JournalCreateDTO } from "../../types/journal.dto";
 
 export class JournalService {
   constructor(private prisma: PrismaClient) {}
@@ -31,5 +31,43 @@ export class JournalService {
     }
     console.log("journal: ", journal);
     return journal;
+  }
+
+  async createJournalEntry(journalId: string, data: CreateJournalEntryDTO): Promise<JournalEntry> {
+     
+    const ExistStudent = await this.prisma.student.findUnique({
+      where: { id: data.studentId},
+    });
+
+    if (!ExistStudent) {
+      throw new Error("Student not found");
+    }
+
+    const ExistJournalEntry = await this.prisma.journalEntry.findUnique({
+        where: {
+            journalId_studentId: {
+                journalId,
+                studentId: data.studentId
+            },
+        }
+    })
+
+    if (ExistJournalEntry) {
+        throw new Error("This student already has entry in this journal");
+    }
+
+     const journalEntry = await this.prisma.journalEntry.create({
+       data: {
+         journalId,
+         studentId: data.studentId,
+         date: data.date,
+         present: data.present ?? null,
+         grade: data.grade ?? null,
+         gradeType: data.gradeType ?? null,
+       },
+     });
+
+     console.log("journalEntry: ", journalEntry);
+     return journalEntry;
   }
 }
