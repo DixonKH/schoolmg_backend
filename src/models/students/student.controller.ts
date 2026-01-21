@@ -2,12 +2,33 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
-import { UpdateStudentDTO } from "../../types/student.dto";
+import { CreateStudentDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
 
 export class StudentController {
+
+   async createStudent(
+     req: Request,
+     res: Response,
+     next: NextFunction,
+   ): Promise<Response | undefined> {
+     try {
+       const student: StudentResponse = await studentService.createStudent(
+         req.body as CreateStudentDTO,
+       );
+ 
+       return res.status(200).json({
+         success: true,
+         message: "Student created successfully",
+         data: student,
+       });
+     } catch (error: any) {
+       next(error);
+     }
+   }
+
   async getMe(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | undefined> {
     const userId = req.user!.id;
     try {
@@ -64,6 +85,25 @@ export class StudentController {
       });
     } catch (error: any) {
       next(error);
+    }
+  }
+
+  async getAllStudentsByClass(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { classId } = req.params;
+      const students: Student[] =
+        await studentService.getAllStudentsByClass(classId);
+  
+      return res.status(200).json({
+        success: true,
+        data: students,
+      });
+    } catch (e: any) {
+      next(e);
     }
   }
 }

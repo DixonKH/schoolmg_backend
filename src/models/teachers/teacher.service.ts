@@ -1,6 +1,7 @@
 import cloudinary from "../../config/cloudinary";
-import { Prisma, PrismaClient, Teacher } from "../../generated/prisma";
-import { UpdateTeacherDTO } from "../../types/teacher.dto";
+import { Prisma, PrismaClient, Teacher, UserRole } from "../../generated/prisma";
+import { CreateTeacherDTO, TeacherResponse, UpdateTeacherDTO } from "../../types/teacher.dto";
+import * as bcrypt from "bcrypt";
 
 type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
@@ -55,4 +56,69 @@ export class TeacherService {
     console.log("updatedTeacher: ", updatedTeacher);
     return updatedTeacher;
   }
-}
+
+  async createTeacher(data: CreateTeacherDTO): Promise<TeacherResponse> {
+      const hashed = await bcrypt.hash(data.password, 10);
+  
+      return await this.prisma.$transaction(async (prisma) => {
+        const user = await prisma.user.create({
+          data: {
+            email: data.email,
+            username: data.username,
+            password: hashed,
+            role: UserRole.TEACHER,
+          },
+        });
+  
+        const teacher = await prisma.teacher.create({
+          data: {
+            userId: user.id,
+            fullName: data.fullName,
+            phone: data.phone,
+          },
+        });
+  
+        const subjectRecords = await Promise.all(
+          data.subjects.map(async (name) => {
+            return await prisma.subject.upsert({
+              where: {
+                name_classId: {
+                  name,
+                  classId: data.classId,
+                },
+              },
+              update: {
+                teacherId: teacher.id, // agar oldin bo‘lsa update
+              },
+              create: {
+                name,
+                teacherId: teacher.id,
+                classId: data.classId,
+              },
+            });
+          }),
+        );
+  
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          fullName: teacher.fullName,
+          phone: teacher.phone || undefined,
+          subjects: subjectRecords.map((s: any) => s.name),
+          classId: data.classId,
+        };
+      });
+    }
+
+   async getAllTeachers(): Promise<Teacher[]> {
+    const teachers = await this.prisma.teacher.findMany({
+      include: {
+        subjects: true,
+        classes: true,
+      },
+    });
+    console.log("teachers: ", teachers);
+    return teachers;
+  }
+} 

@@ -18,22 +18,4 @@ router.get("/user/:id", adminController.getUserById);
 router.delete("/user_delete/:id", adminController.deleteUser);
 
 
-// teacher
-router.post("/create_teacher", adminController.createTeacher);
-router.get("/get_teachers", roleMiddleware("TEACHER", "ADMIN"), adminController.getAllTeachers);
-
-// student
-router.post("/create_student", adminController.createStudent);
-router.get("/students/:classId", adminController.getAllStudentsByClass);
-
-// class
-router.post("/create_class", adminController.createClass);
-router.get("/get_classes", roleMiddleware("TEACHER", "ADMIN"), adminController.getAllClasses);
-
-// subject
-router.post("/add_subject/:teacherId", adminController.addSubject);
-
-// schedule
-router.post("/create_schedule", adminController.createSchedule);
-
 export default router;

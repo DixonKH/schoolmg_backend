@@ -4,23 +4,28 @@ import { authMiddleware } from "../../middilwares/auth.middleware";
 import { upload } from "../../middilwares/upload.middleware";
 import { validateMiddleware } from "../../middilwares/validate.middleware";
 import { updateUserSchema } from "../../schemas/student.schema";
+import { roleMiddleware } from "../../middilwares/role.middleware";
 
 const router = express.Router();
 const studentController = new StudentController();
 
-router.get("/me", authMiddleware, studentController.getMe);
+router.use(authMiddleware);
+
+router.post("/create_student", roleMiddleware("ADMIN"), studentController.createStudent);
+
+router.get("/me", studentController.getMe);
 
 router.put(
   "/me/update",
-  authMiddleware,
   validateMiddleware(updateUserSchema),
   studentController.updateProfile,
 );
 router.put(
   "/me/avatar",
-  authMiddleware,
   upload.single("avatar"),
   studentController.updateAvatar,
 );
+
+router.get("/get_students/:classId", studentController.getAllStudentsByClass);
 
 export default router;
