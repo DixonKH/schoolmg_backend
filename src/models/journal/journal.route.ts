@@ -21,9 +21,16 @@ router.post(
 );
 
 router.get(
-  "/get_journalById/:id", 
+  "/get_journalById/:id",
   roleMiddleware("TEACHER", "ADMIN"),
-  journalController.getJournalById);
+  journalController.getJournalById,
+);
+
+router.get(
+  "/get_all_journal",
+  roleMiddleware("TEACHER", "ADMIN"),
+  journalController.getAllJournals,
+);
 
 router.post(
   "/bulk_create/:id/entries/bulk",
@@ -31,6 +38,10 @@ router.post(
   journalController.bulkCreateEntries,
 );
 
-router.post("/bulk_update/:id/entries", roleMiddleware("TEACHER"), journalController.bulkUpdatedEntries);
+router.post(
+  "/bulk_update/:id/entries",
+  roleMiddleware("TEACHER"),
+  journalController.bulkUpdatedEntries,
+);
 
 export default router;

@@ -34,3 +34,11 @@ export type JournalWithRelations = Prisma.JournalGetPayload<{
         }
     }
 }>
+
+export interface GetAllJournalFilter {
+  classId?: string;
+  subjectId?: string;
+  teacherId?: string;
+  fromDate?: string;
+  toDate?: string
+} 

@@ -1,6 +1,12 @@
-import { Journal, JournalEntry, PrismaClient } from "../../generated/prisma";
+import {
+  Journal,
+  JournalEntry,
+  Prisma,
+  PrismaClient,
+} from "../../generated/prisma";
 import {
   CreateJournalEntryDTO,
+  GetAllJournalFilter,
   JournalCreateDTO,
   JournalWithRelations,
   UpdateJournalEntryDTO,
@@ -10,13 +16,13 @@ export class JournalService {
   constructor(private prisma: PrismaClient) {}
 
   async getOrCreateJournal(data: JournalCreateDTO): Promise<Journal> {
-    console.log("DATA:", data);
+    const { date, classId, subjectId } = data;
     const journal = await this.prisma.journal.findUnique({
       where: {
         date_classId_subjectId: {
-          date: data.date,
-          classId: data.classId,
-          subjectId: data.subjectId,
+          date: date,
+          classId: classId,
+          subjectId: subjectId,
         },
       },
       include: {
@@ -36,6 +42,58 @@ export class JournalService {
     }
     console.log("journal: ", journal);
     return journal;
+  }
+
+  async getJournalById(id: string): Promise<JournalWithRelations> {
+    const journal = await this.prisma.journal.findUnique({
+      where: { id },
+      include: {
+        class: { select: { id: true, name: true } },
+        subject: { select: { id: true, name: true } },
+        teacher: { select: { id: true, fullName: true } },
+        entries: {
+          orderBy: { student: { fullName: "asc" } },
+          include: {
+            student: { select: { id: true, fullName: true } },
+          },
+        },
+      },
+    });
+    if (!journal) throw new Error("Journal not found");
+
+    console.log("journal: ", journal);
+    return journal satisfies JournalWithRelations;
+  }
+
+  async getAllJournals(filter: GetAllJournalFilter) {
+    const { classId, subjectId, teacherId, fromDate, toDate } = filter;
+
+    const where: Prisma.JournalWhereInput = {
+      ...(classId && { classId }),
+      ...(subjectId && { subjectId }),
+      ...(teacherId && { teacherId }),
+      ...(fromDate || toDate
+        ? {
+            date: {
+              ...(fromDate && { gte: fromDate }),
+              ...(toDate && { lte: toDate }),
+            },
+          }
+        : {}),
+    };
+
+    const alljournals = await this.prisma.journal.findMany({
+      where,
+      include: {
+        class: { select: { id: true, name: true } },
+        subject: { select: { id: true, name: true } },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    if (!alljournals.length) throw new Error("Journals not found");
+
+    return alljournals;
   }
 
   async createJournalEntry(
@@ -76,26 +134,6 @@ export class JournalService {
 
     console.log("journalEntry: ", journalEntry);
     return journalEntry;
-  }
-
-  async getJournalById(id: string): Promise<JournalWithRelations> {
-    const journal = await this.prisma.journal.findUnique({
-      where: { id },
-      include: {
-        class: { select: { id: true, name: true } },
-        subject: { select: { id: true, name: true } },
-        teacher: { select: { id: true, fullName: true } },
-        entries: { orderBy: { student: { fullName: "asc" } },
-          include: {
-            student: { select: { id: true, fullName: true } },
-          },
-        },
-      },
-    });
-    if (!journal) throw new Error("Journal not found");
-
-    console.log("journal: ", journal);
-    return journal satisfies JournalWithRelations;
   }
 
   async bulkCreateEntries(

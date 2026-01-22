@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "Journal" ALTER COLUMN "date" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "JournalEntry" ALTER COLUMN "date" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "Schedule" ALTER COLUMN "startTime" SET DATA TYPE TEXT,
+ALTER COLUMN "endTime" SET DATA TYPE TEXT;
