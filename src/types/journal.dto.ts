@@ -14,3 +14,10 @@ export interface CreateJournalEntryDTO {
   grade?: number;
   gradeType?: GradeType;
 }
+
+export interface UpdateJournalEntryDTO {
+  studentId: string;
+  present?: boolean;
+  grade?: number;
+  gradeType?: GradeType;
+}

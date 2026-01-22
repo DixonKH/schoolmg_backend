@@ -56,4 +56,20 @@ export class JournalController {
             next(e);
           }
       }
+
+      async bulkUpdatedEntries(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+        try {
+            const journalId = req.params.id;
+            const {entries} = req.body;
+            const updatedStudentEnrties = await journalService.bulkUpdateEntries(journalId, entries);
+
+            return res.status(200).json({
+                success: true,
+                message: "Journal entry updated successfully",
+                data: updatedStudentEnrties,
+            })
+        }catch(e: any) {
+          next(e);
+        }
+      }
 }

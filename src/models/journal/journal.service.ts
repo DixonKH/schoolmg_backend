@@ -1,11 +1,15 @@
 import { Journal, JournalEntry, PrismaClient } from "../../generated/prisma";
-import { CreateJournalEntryDTO, JournalCreateDTO } from "../../types/journal.dto";
+import {
+  CreateJournalEntryDTO,
+  JournalCreateDTO,
+  UpdateJournalEntryDTO,
+} from "../../types/journal.dto";
 
 export class JournalService {
   constructor(private prisma: PrismaClient) {}
 
   async getOrCreateJournal(data: JournalCreateDTO): Promise<Journal> {
-     console.log("DATA:", data);
+    console.log("DATA:", data);
     const journal = await this.prisma.journal.findUnique({
       where: {
         date_classId_subjectId: {
@@ -33,10 +37,12 @@ export class JournalService {
     return journal;
   }
 
-  async createJournalEntry(journalId: string, data: CreateJournalEntryDTO): Promise<JournalEntry> {
-     
+  async createJournalEntry(
+    journalId: string,
+    data: CreateJournalEntryDTO,
+  ): Promise<JournalEntry> {
     const ExistStudent = await this.prisma.student.findUnique({
-      where: { id: data.studentId},
+      where: { id: data.studentId },
     });
 
     if (!ExistStudent) {
@@ -44,64 +50,91 @@ export class JournalService {
     }
 
     const ExistJournalEntry = await this.prisma.journalEntry.findUnique({
-        where: {
-            journalId_studentId: {
-                journalId,
-                studentId: data.studentId
-            },
-        }
-    })
+      where: {
+        journalId_studentId: {
+          journalId,
+          studentId: data.studentId,
+        },
+      },
+    });
 
     if (ExistJournalEntry) {
-        throw new Error("This student already has entry in this journal");
+      throw new Error("This student already has entry in this journal");
     }
 
-     const journalEntry = await this.prisma.journalEntry.create({
-       data: {
-         journalId,
-         studentId: data.studentId,
-         date: data.date,
-         present: data.present ?? null,
-         grade: data.grade ?? null,
-         gradeType: data.gradeType ?? null,
-       },
-     });
+    const journalEntry = await this.prisma.journalEntry.create({
+      data: {
+        journalId,
+        studentId: data.studentId,
+        date: data.date,
+        present: data.present ?? null,
+        grade: data.grade ?? null,
+        gradeType: data.gradeType ?? null,
+      },
+    });
 
-     console.log("journalEntry: ", journalEntry);
-     return journalEntry;
+    console.log("journalEntry: ", journalEntry);
+    return journalEntry;
   }
 
-  async bulkCreateEntries(journalId: string, entries: any[]): Promise<JournalEntry[]> {
+  async bulkCreateEntries(
+    journalId: string,
+    entries: any[],
+  ): Promise<JournalEntry[]> {
     return this.prisma.$transaction(async (tx) => {
-       
-        const createdEntries = [];
+      const createdEntries = [];
 
-        for(const entry of entries) {
-            const exist = await tx.journalEntry.findUnique({
-                where: {
-                    journalId_studentId: {
-                        journalId,
-                        studentId: entry.studentId
-                    },
-                }
-            });
-            if(exist) continue; // skip
+      for (const entry of entries) {
+        const exist = await tx.journalEntry.findUnique({
+          where: {
+            journalId_studentId: {
+              journalId,
+              studentId: entry.studentId,
+            },
+          },
+        });
+        if (exist) continue; // skip
 
-           const journalEntries = await tx.journalEntry.create({
-                data: {
-                    journalId,
-                    studentId: entry.studentId,
-                    date: entry.date,
-                    present: entry.present ?? null,
-                    grade: entry.grade ?? null,
-                    gradeType: entry.gradeType ?? null
-                }
-            })
-            createdEntries.push(journalEntries);
-        }
-        
-        console.log("createdEntries: ", createdEntries);
-        return createdEntries;
-    })
+        const journalEntries = await tx.journalEntry.create({
+          data: {
+            journalId,
+            studentId: entry.studentId,
+            date: entry.date,
+            present: entry.present ?? null,
+            grade: entry.grade ?? null,
+            gradeType: entry.gradeType ?? null,
+          },
+        });
+        createdEntries.push(journalEntries);
+      }
+
+      console.log("createdEntries: ", createdEntries);
+      return createdEntries;
+    });
+  }
+
+  async bulkUpdateEntries(
+    journalId: string,
+    entries: UpdateJournalEntryDTO[],
+  ): Promise<{updated: number}> {
+    return this.prisma.$transaction(async (txt) => {
+
+      for (const entry of entries) {
+        await txt.journalEntry.update({
+          where: {
+            journalId_studentId: {
+              journalId,
+              studentId: entry.studentId,
+            },
+          },
+          data: {
+            present: entry.present ?? null,
+            grade: entry.grade ?? null,
+            gradeType: entry.gradeType ?? null,
+          },
+        });
+      }
+      return {updated: entries.length};
+    });
   }
 }

@@ -26,4 +26,6 @@ router.post(
   journalController.bulkCreateEntries,
 );
 
+router.post("/bulk_update/:id/entries", roleMiddleware("TEACHER"), journalController.bulkUpdatedEntries);
+
 export default router;
