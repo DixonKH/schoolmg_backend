@@ -39,6 +39,20 @@ export class JournalController {
           }
       }
 
+      async getJournalById(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+        try {
+            const journalId = req.params.id;
+            const journal = await journalService.getJournalById(journalId);
+            
+            return res.status(200).json({
+                success: true,
+                data: journal,
+            });
+        }catch(e: any) {
+          next(e);
+        }
+      }
+
       async bulkCreateEntries(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
           try {
             const {entries} = req.body;

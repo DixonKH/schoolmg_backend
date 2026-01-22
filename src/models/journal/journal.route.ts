@@ -20,6 +20,11 @@ router.post(
   journalController.createJournalEntry,
 );
 
+router.get(
+  "/get_journalById/:id", 
+  roleMiddleware("TEACHER", "ADMIN"),
+  journalController.getJournalById);
+
 router.post(
   "/bulk_create/:id/entries/bulk",
   roleMiddleware("ADMIN"),

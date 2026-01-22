@@ -2,6 +2,7 @@ import { Journal, JournalEntry, PrismaClient } from "../../generated/prisma";
 import {
   CreateJournalEntryDTO,
   JournalCreateDTO,
+  JournalWithRelations,
   UpdateJournalEntryDTO,
 } from "../../types/journal.dto";
 
@@ -77,6 +78,26 @@ export class JournalService {
     return journalEntry;
   }
 
+  async getJournalById(id: string): Promise<JournalWithRelations> {
+    const journal = await this.prisma.journal.findUnique({
+      where: { id },
+      include: {
+        class: { select: { id: true, name: true } },
+        subject: { select: { id: true, name: true } },
+        teacher: { select: { id: true, fullName: true } },
+        entries: { orderBy: { student: { fullName: "asc" } },
+          include: {
+            student: { select: { id: true, fullName: true } },
+          },
+        },
+      },
+    });
+    if (!journal) throw new Error("Journal not found");
+
+    console.log("journal: ", journal);
+    return journal satisfies JournalWithRelations;
+  }
+
   async bulkCreateEntries(
     journalId: string,
     entries: any[],
@@ -116,9 +137,8 @@ export class JournalService {
   async bulkUpdateEntries(
     journalId: string,
     entries: UpdateJournalEntryDTO[],
-  ): Promise<{updated: number}> {
+  ): Promise<{ updated: number }> {
     return this.prisma.$transaction(async (txt) => {
-
       for (const entry of entries) {
         await txt.journalEntry.update({
           where: {
@@ -134,7 +154,7 @@ export class JournalService {
           },
         });
       }
-      return {updated: entries.length};
+      return { updated: entries.length };
     });
   }
 }
