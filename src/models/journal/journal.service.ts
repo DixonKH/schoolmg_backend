@@ -70,4 +70,38 @@ export class JournalService {
      console.log("journalEntry: ", journalEntry);
      return journalEntry;
   }
+
+  async bulkCreateEntries(journalId: string, entries: any[]): Promise<JournalEntry[]> {
+    return this.prisma.$transaction(async (tx) => {
+       
+        const createdEntries = [];
+
+        for(const entry of entries) {
+            const exist = await tx.journalEntry.findUnique({
+                where: {
+                    journalId_studentId: {
+                        journalId,
+                        studentId: entry.studentId
+                    },
+                }
+            });
+            if(exist) continue; // skip
+
+           const journalEntries = await tx.journalEntry.create({
+                data: {
+                    journalId,
+                    studentId: entry.studentId,
+                    date: entry.date,
+                    present: entry.present ?? null,
+                    grade: entry.grade ?? null,
+                    gradeType: entry.gradeType ?? null
+                }
+            })
+            createdEntries.push(journalEntries);
+        }
+        
+        console.log("createdEntries: ", createdEntries);
+        return createdEntries;
+    })
+  }
 }

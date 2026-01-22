@@ -38,4 +38,22 @@ export class JournalController {
             next(e);
           }
       }
+
+      async bulkCreateEntries(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+          try {
+            const {entries} = req.body;
+            const journalId = req.params.id;
+            
+            const newJournalEntry = await journalService.bulkCreateEntries(journalId, entries);
+            
+            return res.status(200).json({
+                success: true,
+                message: "Journal entry created successfully",
+                data: newJournalEntry,
+            });
+
+          }catch(e: any) {
+            next(e);
+          }
+      }
 }

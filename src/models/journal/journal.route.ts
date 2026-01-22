@@ -20,4 +20,10 @@ router.post(
   journalController.createJournalEntry,
 );
 
+router.post(
+  "/bulk_create/:id/entries/bulk",
+  roleMiddleware("ADMIN"),
+  journalController.bulkCreateEntries,
+);
+
 export default router;
