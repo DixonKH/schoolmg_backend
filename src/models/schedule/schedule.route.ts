@@ -17,4 +17,9 @@ router.post(
   scheduleController.createSchedule,
 );
 
+router.get(
+  "/get_schedules/:id",
+  roleMiddleware("TEACHER", "ADMIN"),
+  scheduleController.getClassSchedules,)
+
 export default router;
