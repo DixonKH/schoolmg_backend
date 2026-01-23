@@ -74,15 +74,7 @@ export class JournalController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const { classId, subjectId, teacherId, fromDate, toDate } = req.query;
-
-      const journals = await journalService.getAllJournals({
-        classId: classId as string | undefined,
-        subjectId: subjectId as string | undefined,
-        teacherId: teacherId as string | undefined,
-        fromDate: fromDate as string | undefined,
-        toDate: toDate as string | undefined,
-      });
+      const journals = await journalService.getAllJournals(req.query);
 
       return res.status(200).json({
         success: true,
