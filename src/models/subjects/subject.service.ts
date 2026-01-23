@@ -26,7 +26,7 @@ export class SubjectService {
         console.log("newSubject: ", newSubject);
         return newSubject;
       }
-
+ 
     async deleteSubject(subjectId: string) {
     const subject = await this.prisma.subject.findUnique({
       where: { id: subjectId },

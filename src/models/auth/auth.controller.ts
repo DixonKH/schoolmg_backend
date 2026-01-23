@@ -10,14 +10,8 @@ const authService = new AuthService(prisma);
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, username, password, role }: RegisterInput = req.body;
 
-      const user = await authService.register({
-        email,
-        username,
-        password,
-        role,
-      });
+      const user = await authService.register(req.body);
 
       const { password: _, ...safeUser } = user;
 

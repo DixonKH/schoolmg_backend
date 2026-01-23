@@ -1,7 +1,7 @@
 import { WeekDay } from "../generated/prisma";
 
 export interface CreateScheduleDto {
-    dayOfWeek: WeekDay;
+    dayOfWeek: WeekDay; 
     startTime: string;
     endTime: string;
     room: string;

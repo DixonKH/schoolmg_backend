@@ -5,46 +5,66 @@ export class ScheduleService {
   constructor(private prisma: PrismaClient) {}
 
   async createSchedule(data: CreateScheduleDto): Promise<Schedule> {
-    const class_ = await this.prisma.class.findUnique({
-      where: { id: data.classId },
-    });
-    if (!class_) throw new Error("Class not found");
+    return await this.prisma.$transaction(async (tx) => {
+      const class_ = await tx.class.findUnique({
+        where: { id: data.classId },
+      });
+      if (!class_) throw new Error("Class not found");
 
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id: data.teacherId },
-    });
-    if (!teacher) throw new Error("Teacher not found");
+      const teacher = await tx.teacher.findUnique({
+        where: { id: data.teacherId },
+      });
+      if (!teacher) throw new Error("Teacher not found");
 
-    const subject = await this.prisma.subject.findUnique({
-      where: { id: data.subjectId },
-    });
-    if (!subject) throw new Error("Subject not found");
+      const subject = await tx.subject.findUnique({
+        where: { id: data.subjectId },
+      });
+      if (!subject) throw new Error("Subject not found");
 
-    const existing = await this.prisma.schedule.findFirst({
-      where: {
-        classId: data.classId,
-        dayOfWeek: data.dayOfWeek,
-        startTime: data.startTime,
-      },
-    });
-    if (existing)
-      throw new Error(
-        "Schedule conflict: this class already has a lesson at this time",
-      );
+      const classConflict = await tx.schedule.findFirst({
+        where: {
+          classId: data.classId,
+          dayOfWeek: data.dayOfWeek,
+          startTime: { lt: data.endTime },
+          endTime: { gt: data.startTime },
+        },
+      });
 
-    const schedule = await this.prisma.schedule.create({
-      data: {
-        dayOfWeek: data.dayOfWeek,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        room: data.room,
-        teacherId: data.teacherId,
-        subjectId: data.subjectId,
-        classId: data.classId,
-      },
-    });
+      if (classConflict) {
+        throw new Error(
+          "Schedule conflict: class already has a lesson at this time",
+        );
+      }
 
-    console.log("schedule: ", schedule);
-    return schedule;
+      const teacherConflict = await tx.schedule.findFirst({
+        where: {
+          teacherId: data.teacherId,
+          dayOfWeek: data.dayOfWeek,
+          startTime: { lt: data.endTime },
+          endTime: { gt: data.startTime },
+        },
+      });
+
+      if (teacherConflict) {
+        throw new Error(
+          "Schedule conflict: teacher already has a lesson at this time",
+        );
+      }
+
+      const schedule = await tx.schedule.create({
+        data: {
+          dayOfWeek: data.dayOfWeek,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          room: data.room,
+          teacherId: data.teacherId,
+          subjectId: data.subjectId,
+          classId: data.classId,
+        },
+      });
+
+      console.log("schedule: ", schedule);
+      return schedule;
+    });
   }
 }

@@ -13,7 +13,7 @@ export class ScheduleController {
   ): Promise<Response | undefined> {
     try {
       const schedule = await scheduleService.createSchedule(req.body);
-
+ 
       return res.status(200).json({
         success: true,
         message: "Schedule created successfully",

@@ -13,7 +13,7 @@ router.post(
   roleMiddleware("ADMIN"),
   subjectController.addSubject,
 );
-
+ 
 router.get(
   "/get_subjects/:classId",
   roleMiddleware("TEACHER", "ADMIN"),
