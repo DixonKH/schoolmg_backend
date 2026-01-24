@@ -1,16 +1,10 @@
 import {
-  Class,
   Prisma,
   PrismaClient,
-  Schedule,
-  Subject,
   User,
   UserRole,
 } from "../../generated/prisma";
-import * as bcrypt from "bcrypt";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
-import { ClassDTO } from "../../types/class.dto";
-import { CreateScheduleDto } from "../../types/schedule.dto";
 
 export class AdminService {
   constructor(private prisma: PrismaClient) {}

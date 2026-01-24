@@ -23,6 +23,7 @@ router.get(
 
 router.get(
   "/get_teacher_schedules/:id",
+  roleMiddleware("TEACHER", "ADMIN"),
   scheduleController.getTeacherSchedules,
 );
 

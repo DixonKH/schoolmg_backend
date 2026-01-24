@@ -193,25 +193,6 @@ model Subject {
   @@unique([name, classId])
 }
 
-model Attendance {
-  id        String   @id @default(uuid())
-  date      DateTime
-  present   Boolean
-
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
-
-  classId   String?
-  class     Class?   @relation(fields: [classId], references: [id])
-
-  subjectId String?
-  subject   Subject?   @relation(fields: [subjectId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@unique([date, studentId, subjectId])
-}
-
 model Grade {
   id        String   @id @default(uuid())
   value     Float
@@ -264,20 +245,6 @@ model JournalEntry {
   @@unique([journalId, studentId])
 }
 
-
-model Payment {
-  id        String         @id @default(uuid())
-  amount    Float
-  status    PaymentStatus @default(PENDING)
-  method    PaymentMethod
-  paidAt    DateTime?
-
-  studentId String
-  student   Student        @relation(fields: [studentId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
 model Schedule {
   id        String   @id @default(uuid())
 
@@ -299,6 +266,38 @@ model Schedule {
 
   @@index([teacherId, dayOfWeek])
   @@unique([classId, dayOfWeek, startTime, endTime])
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  date      DateTime
+  present   Boolean
+
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  classId   String?
+  class     Class?   @relation(fields: [classId], references: [id])
+
+  subjectId String?
+  subject   Subject?   @relation(fields: [subjectId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, studentId, subjectId])
+}
+
+model Payment {
+  id        String         @id @default(uuid())
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  method    PaymentMethod
+  paidAt    DateTime?
+
+  studentId String
+  student   Student        @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Notification {
