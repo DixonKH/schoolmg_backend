@@ -1,47 +1,59 @@
 import cloudinary from "../../config/cloudinary";
 import { PrismaClient, Student, UserRole } from "../../generated/prisma";
-import { CreateStudentDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
+import {
+  CreateStudentDTO,
+  StudentResponse,
+  UpdateStudentDTO,
+} from "../../types/student.dto";
 import * as bcrypt from "bcrypt";
 
 export class StudentService {
   constructor(private prisma: PrismaClient) {}
 
-   async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
-      const hashed = await bcrypt.hash(data.password, 10);
-  
-      return await this.prisma.$transaction(async (prisma) => {
-        const user = await prisma.user.create({
-          data: {
-            email: data.email,
-            username: data.username,
-            password: hashed,
-            role: UserRole.STUDENT,
-          },
-        });
-  
-        const student = await prisma.student.create({
-          data: {
-            userId: user.id,
-            fullName: data.fullName,
-            birthDate: data.birthDate,
-            parentName: data.parentName,
-            phone: data.phone,
-            classId: data.classId,
-          },
-        });
-  
-        return {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          fullName: student.fullName,
-          birthDate: student.birthDate,
-          parentName: student.parentName ?? undefined,
-          phone: student.phone ?? undefined,
-          classId: student.classId,
-        };
-      });
+  async createStudent(data: CreateStudentDTO): Promise<StudentResponse> {
+    const hashed = await bcrypt.hash(data.password, 10);
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { username: data.username },
+    });
+
+    if (existingUser) {
+      throw new Error("Username already exists");
     }
+
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          username: data.username,
+          password: hashed,
+          role: UserRole.STUDENT,
+        },
+      });
+
+      const student = await prisma.student.create({
+        data: {
+          userId: user.id,
+          fullName: data.fullName,
+          birthDate: data.birthDate,
+          parentName: data.parentName,
+          phone: data.phone,
+          classId: data.classId,
+        },
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: student.fullName,
+        birthDate: student.birthDate,
+        parentName: student.parentName ?? undefined,
+        phone: student.phone ?? undefined,
+        classId: student.classId,
+      };
+    });
+  }
 
   async getMe(userId: string): Promise<Student> {
     const student = await this.prisma.student.findUnique({
@@ -53,7 +65,10 @@ export class StudentService {
     return student;
   }
 
-  async updateProfile(userId: string, data: UpdateStudentDTO): Promise<Student> {
+  async updateProfile(
+    userId: string,
+    data: UpdateStudentDTO,
+  ): Promise<Student> {
     const user = await this.prisma.student.findUnique({
       where: { userId },
     });
@@ -74,26 +89,25 @@ export class StudentService {
 
     console.log("student: ", student);
     return student;
-  } 
+  }
 
   async getAllStudentsByClass(classId: string): Promise<Student[]> {
-      const students: Student[] = await this.prisma.student.findMany({
-        where: { classId },
-        include: {
-          class: true,
-          user: {
-            select: {
-              email: true,
-              username: true,
-            },
+    const students: Student[] = await this.prisma.student.findMany({
+      where: { classId },
+      include: {
+        class: true,
+        user: {
+          select: {
+            email: true,
+            username: true,
           },
         },
-      });
-      if (!students.length) {
-        throw new Error("Students not found");
-      }
-      console.log("students: ", students);
-      return students;
+      },
+    });
+    if (!students.length) {
+      throw new Error("Students not found");
     }
-  
+    console.log("students: ", students);
+    return students;
+  }
 }

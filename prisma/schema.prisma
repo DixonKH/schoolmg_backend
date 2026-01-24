@@ -132,9 +132,9 @@ model Student {
   class          Class        @relation(fields: [classId], references: [id])
 
   payments       Payment[]
-  attendances    Attendance[]
   grades         Grade[]
   journalEntries JournalEntry[]
+  attendanceEntries  AttendanceEntry[]
 
   createdAt      DateTime @default(now())
 }
@@ -169,7 +169,6 @@ model Class {
   students  Student[]
   subjects  Subject[]
   schedule  Schedule[]
-  attendance  Attendance[]
   journals Journal[]
 
   createdAt DateTime @default(now())
@@ -186,7 +185,6 @@ model Subject {
   teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   grades    Grade[]
-  attendance  Attendance[]
   schedule  Schedule[]
   journals Journal[]
 
@@ -262,6 +260,7 @@ model Schedule {
   classId   String
   class     Class    @relation(fields: [classId], references: [id])
 
+  attendance Attendance[]
   createdAt DateTime @default(now())
 
   @@index([teacherId, dayOfWeek])
@@ -269,23 +268,32 @@ model Schedule {
 }
 
 model Attendance {
-  id        String   @id @default(uuid())
-  date      DateTime
-  present   Boolean
+  id         String   @id @default(uuid())
+  date       String
 
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
 
-  classId   String?
-  class     Class?   @relation(fields: [classId], references: [id])
+  entries    AttendanceEntry[]
 
-  subjectId String?
-  subject   Subject?   @relation(fields: [subjectId], references: [id])
+  createdAt  DateTime @default(now())
 
-  createdAt DateTime @default(now())
-
-  @@unique([date, studentId, subjectId])
+  @@unique([scheduleId, date])
 }
+
+model AttendanceEntry {
+  id            String   @id @default(uuid())
+  present       Boolean
+
+  attendanceId  String
+  attendance    Attendance @relation(fields: [attendanceId], references: [id])
+
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id])
+
+  @@unique([attendanceId, studentId])
+}
+
 
 model Payment {
   id        String         @id @default(uuid())
