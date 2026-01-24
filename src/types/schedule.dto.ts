@@ -9,7 +9,7 @@ export interface CreateScheduleDto {
     subjectId: string;
     classId: string;
 }   
-
+ 
  type ScheduleItem = {
     id: string;
     startTime: string;

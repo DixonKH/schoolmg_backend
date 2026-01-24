@@ -7,20 +7,34 @@ const subjectService = new SubjectService(prisma);
 
 export class SubjectController {
 
-    async addSubject(
+    async createSubject(
       req: Request,
       res: Response,
       next: NextFunction,
     ): Promise<Response | undefined> {
       try {
-        const { teacherId } = req.params;
         const { subject } = req.body;
-        const newSubject = await subjectService.addSubject(teacherId, subject);
+        const newSubject = await subjectService.createSubject(subject);
         
         return res.status(200).json({
           success: true,
           message: "Subject created successfully",
           data: newSubject,
+        });
+      } catch (e: any) {
+        next(e);
+      }
+    }
+
+    async attachSubjectToTeacher(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+      try {
+        const { subjectId, teacherId} = req.params;
+        const subject = await subjectService.attachSubjectToTeacher(subjectId, teacherId);
+        
+        return res.status(200).json({
+          success: true,
+          message: "Subject attech to teacher successfully",
+          data: subject,
         });
       } catch (e: any) {
         next(e);
@@ -38,20 +52,6 @@ export class SubjectController {
           data: deletedSubject,
         });
       } catch (e: any) {
-        next(e);
-      }
-    }
-
-    async getAllSubjectsByClass(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-      try {
-         const { classId } = req.params;
-         const subjects = await subjectService.getAllSubjectsByClass(classId);
-
-         return res.status(200).json({
-           success: true,
-           data: subjects,
-         });
-      }catch(e: any) {
         next(e);
       }
     }

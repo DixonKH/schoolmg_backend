@@ -152,7 +152,9 @@ model Teacher {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
 
-  classes   Class[]
+  homeroomClasses Class[] @relation("HomeroomTeacher")
+
+  classes   Class[]  @relation("TeacherClasses")
   subjects  Subject[]
   schedule  Schedule[]
   journals Journal[]
@@ -164,12 +166,13 @@ model Class {
   capacity  Int
 
   teacherId String?
-  teacher   Teacher?  @relation(fields: [teacherId], references: [id])
+  teacher   Teacher?  @relation("HomeroomTeacher", fields: [teacherId], references: [id])
 
   students  Student[]
   subjects  Subject[]
   schedule  Schedule[]
-  journals Journal[]
+  journals  Journal[]
+  teachers  Teacher[]  @relation("TeacherClasses")
 
   createdAt DateTime @default(now())
 }
@@ -181,12 +184,10 @@ model Subject {
   classId   String?
   class     Class?    @relation(fields: [classId], references: [id])
 
-  teacherId String
-  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-
   grades    Grade[]
   schedule  Schedule[]
-  journals Journal[]
+  journals  Journal[]
+  teachers   Teacher[]
 
   @@unique([name, classId])
 }

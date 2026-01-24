@@ -4,8 +4,9 @@ export interface CreateTeacherDTO {
   password: string;
   fullName: string;
   phone?: string;
-  subjects: string[];
-  classId: string;
+
+  subjectIds: string[];
+  classIds: string[];
 }
 
 export interface TeacherResponse {
@@ -14,8 +15,8 @@ export interface TeacherResponse {
   username: string;
   fullName: string;
   phone?: string;
-  subjects: string[];
-  classId: string;
+  classes: {id: string, name: string}[];
+  subjects: {id: string, name: string}[];
 }
 
 export interface UpdateTeacherDTO {

@@ -9,22 +9,21 @@ const subjectController = new SubjectController();
 router.use(authMiddleware);
 
 router.post(
-  "/add_subject/:teacherId",
+  "/create_subject",
   roleMiddleware("ADMIN"),
-  subjectController.addSubject,
+  subjectController.createSubject,
 );
- 
-router.get(
-  "/get_subjects/:classId",
-  roleMiddleware("TEACHER", "ADMIN"),
-  subjectController.getAllSubjectsByClass,
+
+router.post(
+  "/teachers/:teacherId/subjects/:subjectId",
+  roleMiddleware("ADMIN"),
+  subjectController.attachSubjectToTeacher,
 );
 
 router.delete(
   "/delete_subject/:subjectId",
   roleMiddleware("ADMIN"),
   subjectController.deleteSubject,
-); 
-
+);
 
 export default router;

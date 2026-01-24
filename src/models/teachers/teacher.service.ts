@@ -60,7 +60,7 @@ export class TeacherService {
   async createTeacher(data: CreateTeacherDTO): Promise<TeacherResponse> {
       const hashed = await bcrypt.hash(data.password, 10);
   
-      return await this.prisma.$transaction(async (prisma) => {
+      return this.prisma.$transaction(async (prisma) => {
         const user = await prisma.user.create({
           data: {
             email: data.email,
@@ -75,38 +75,24 @@ export class TeacherService {
             userId: user.id,
             fullName: data.fullName,
             phone: data.phone,
-          },
+            classes: { connect: data.classIds.map((id) => ({ id }))},
+            subjects: { connect: data.subjectIds.map((id) => ({ id }))}
+             },
+          include: { 
+            classes: { select: { id: true, name: true } }, 
+            subjects: { select: { id: true, name: true } }
+          }
         });
   
-        const subjectRecords = await Promise.all(
-          data.subjects.map(async (name) => {
-            return await prisma.subject.upsert({
-              where: {
-                name_classId: {
-                  name,
-                  classId: data.classId,
-                },
-              },
-              update: {
-                teacherId: teacher.id, // agar oldin bo‘lsa update
-              },
-              create: {
-                name,
-                teacherId: teacher.id,
-                classId: data.classId,
-              },
-            });
-          }),
-        );
-  
+        console.log("teacher: ", teacher);
         return {
-          id: user.id,
-          email: user.email,
-          username: user.username,
+          id: teacher.id,
           fullName: teacher.fullName,
-          phone: teacher.phone || undefined,
-          subjects: subjectRecords.map((s: any) => s.name),
-          classId: data.classId,
+          phone: teacher.phone || " ",
+          email:user.email,
+          username:user.username,
+          classes: teacher.classes,
+          subjects: teacher.subjects
         };
       });
     }
