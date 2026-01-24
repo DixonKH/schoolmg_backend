@@ -1,5 +1,5 @@
 import { PrismaClient, Schedule } from "../../generated/prisma";
-import { CreateScheduleDto, WeekSchedule } from "../../types/schedule.dto";
+import { CreateScheduleDto, TeacherWeeklySchedule, WeekSchedule } from "../../types/schedule.dto";
 
 export class ScheduleService {
   constructor(private prisma: PrismaClient) {}
@@ -106,6 +106,50 @@ export class ScheduleService {
         room: schedule.room,
         subject: schedule.subject,
         teacher: schedule.teacher,
+      });
+    }
+
+    return weekSchedule;
+  }
+
+  async getTeacherSchedules(teacherId: string): Promise<TeacherWeeklySchedule> {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+    });
+
+    if (!teacher) throw new Error("Teacher not found");
+
+    const schedules = await this.prisma.schedule.findMany({
+      where: { teacherId },
+      include: {
+        subject: {
+          select: { id: true, name: true },
+        },
+        class: {
+          select: { id: true, name: true },
+        },
+      },
+      orderBy: [ {dayOfWeek: "asc"}, {startTime: "asc"} ],
+    });
+
+    const weekSchedule: TeacherWeeklySchedule = {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+      Saturday: [],
+      Sunday: [],
+    };
+
+    for (const schedule of schedules) {
+      weekSchedule[schedule.dayOfWeek].push({
+        id: schedule.id,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        room: schedule.room,
+        subject: schedule.subject,
+        class: schedule.class,
       });
     }
 

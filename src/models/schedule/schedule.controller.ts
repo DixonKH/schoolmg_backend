@@ -43,4 +43,24 @@ export class ScheduleController {
       next(e);
     }
   }
+
+  async getTeacherSchedules(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { id } = req.params;
+      if (!id) throw new Error("teacherId is required");
+
+      const schedules = await scheduleService.getTeacherSchedules(id);
+ 
+      return res.status(200).json({
+        success: true,
+        data: schedules,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

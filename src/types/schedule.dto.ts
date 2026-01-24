@@ -10,7 +10,7 @@ export interface CreateScheduleDto {
     classId: string;
 }   
 
-export type ScheduleItem = {
+ type ScheduleItem = {
     id: string;
     startTime: string;
     endTime: string;
@@ -26,3 +26,20 @@ export type ScheduleItem = {
 }
 
 export type WeekSchedule = Record<WeekDay, ScheduleItem[]>
+
+type TeacherScheduleItem = {
+    id: string;
+    startTime: string;
+    endTime: string;
+    room: string;
+    subject: {
+        id: string;
+        name: string;
+    };
+    class:{ 
+        id: string;
+        name: string;
+    };
+}
+
+export type TeacherWeeklySchedule = Record<WeekDay, TeacherScheduleItem[]>
