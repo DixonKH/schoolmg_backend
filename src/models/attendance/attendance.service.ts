@@ -1,6 +1,8 @@
 import { en, tr } from "zod/v4/locales";
 import { PrismaClient } from "../../generated/prisma";
 import {
+  AttendanceStatsQuery,
+  AttendanceStatsResponse,
   AttendanceWithEntries,
   AttendanceWithRelations,
   CreateAttendanceDTO,
@@ -98,35 +100,93 @@ export class AttendanceService {
     });
   }
 
-  async getStudentAttendancePersent(studentId: string): Promise<StudentAttendancePercent> {
-      const student = await this.prisma.student.findUnique({
-        where: { id: studentId },
-      })
+  async getStudentAttendancePersent(
+    studentId: string,
+  ): Promise<StudentAttendancePercent> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+    });
 
-      if (!student) throw new Error("Student not found")
+    if (!student) throw new Error("Student not found");
 
     const entries = await this.prisma.attendanceEntry.findMany({
-      where: {studentId},
+      where: { studentId },
       select: { present: true },
     });
 
     const totalLessons = entries.length;
 
-    if(totalLessons === 0) {
+    if (totalLessons === 0) {
       return {
         studentId,
         totalLessons,
         presentLessons: 0,
         attendancePercent: 0,
-      }
+      };
     }
-    const presentLessons = entries.filter(entry => entry.present).length;
+    const presentLessons = entries.filter((entry) => entry.present).length;
 
     const attendancePercent = (presentLessons / totalLessons) * 100;
     return {
       studentId,
       totalLessons,
       presentLessons,
+      attendancePercent,
+    };
+  }
+
+  async getStudentAttendanceByClass(
+    query: AttendanceStatsQuery,
+  ): Promise<AttendanceStatsResponse> {
+    const { studentId, classId, subjectId, from, to } = query;
+
+    const where: any = {
+      entries: { some: { studentId }}
+    }
+
+    if(classId) {
+      where.schedule = {
+        ...(where.schedule || {}),
+        classId
+      }
+    }
+
+    if(subjectId) {
+      where.schedule = {
+        ...(where.schedule || {}),
+        subjectId
+      }
+    }
+
+    if(from || to) {
+      where.date = {
+        ...(from && {gte: from}),
+        ...(to && {lte: to})
+      }
+    }
+
+    const attendances = await this.prisma.attendance.findMany({
+      where,
+      include: {
+        entries: {
+          where: { studentId },
+        },
+        schedule: true,
+      },
+    })
+
+    const totalLessons = attendances.length;
+    const presentLessons = attendances.reduce((sum, att) => {
+       return sum + (att.entries[0]?.present ? 1 : 0);
+        }, 0);
+
+    const absentLessons = totalLessons - presentLessons;
+    const attendancePercent = totalLessons === 0 ? 0 : Math.round((presentLessons / totalLessons) * 100);
+
+    return {
+      totalLessons,
+      presentLessons,
+      absentLessons,
       attendancePercent,
     };
   }

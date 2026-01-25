@@ -4,7 +4,10 @@ import { ZodError, ZodSchema } from "zod";
 export const validateMiddleware = (schema: ZodSchema<any>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({ body: req.body, params: req.params, query: req.query });
+      const result = schema.parse({ body: req.body, params: req.params, query: req.query });
+
+       (req as any).validated = result;
+
       next();
     } catch (e: any) {
       if (e instanceof ZodError) {

@@ -1,4 +1,6 @@
+import z from "zod";
 import { Prisma } from "../generated/prisma";
+import { AttendanceQuerySchema } from "../schemas/attendance.schema";
 
 export interface CreateAttendanceDTO {
   scheduleId: string;
@@ -50,4 +52,16 @@ export interface StudentAttendancePercent {
   presentLessons: number;
   attendancePercent: number;
 }
+
+export type AttendanceStatsQuery =
+  z.infer<typeof AttendanceQuerySchema>["query"];
+
+export interface AttendanceStatsResponse {
+  totalLessons: number;
+  presentLessons: number;
+  absentLessons: number;
+  attendancePercent: number;
+}
+
+
 

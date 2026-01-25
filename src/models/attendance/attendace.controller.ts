@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "../../generated/prisma";
 import { AttendanceService } from "./attendance.service";
 import { AuthRequest } from "../../types/request.type";
+import { AttendanceStatsQuery } from "../../types/attendance.dto";
 
 
 const prisma = new PrismaClient();
@@ -41,6 +42,21 @@ export class AttendanceController {
             return res.status(200).json({
                 success: true,
                 data: attendances, 
+            });
+        }catch(e) {
+            next(e);
+        }
+    }
+
+    async getStudentAttendanceByClass(req: Request, res: Response, next: NextFunction) {
+        try {
+            const query = (req as any).validated.query as AttendanceStatsQuery;
+
+            const attendance = await attendanceService.getStudentAttendanceByClass(query);
+            
+            return res.status(200).json({
+                success: true,
+                data: attendance, 
             });
         }catch(e) {
             next(e);
