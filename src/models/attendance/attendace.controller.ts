@@ -62,4 +62,16 @@ export class AttendanceController {
             next(e);
         }
     }
+
+    async attendanceClassPerformance(req: Request, res: Response, next: NextFunction) {
+        try {
+            const attendances = await attendanceService.attendanceClassPerformance(req.query);
+            return res.status(200).json({
+                success: true,
+                data: attendances, 
+            });
+        }catch(e) {
+            next(e);
+        }
+    }
 }

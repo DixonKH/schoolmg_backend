@@ -29,4 +29,10 @@ router.get(
   attendanceController.getStudentAttendanceByClass,
 );
 
+router.get(
+  "/attendance_class_performance",
+  validateMiddleware(AttendanceQuerySchema),
+  attendanceController.attendanceClassPerformance,
+);
+
 export default router;

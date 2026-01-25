@@ -8,6 +8,8 @@ import {
   CreateAttendanceDTO,
   GetAttendanceQuery,
   StudentAttendancePercent,
+  TotalAttendanceDTO,
+  TotalAttendanceResponse,
 } from "../../types/attendance.dto";
 
 export class AttendanceService {
@@ -189,5 +191,48 @@ export class AttendanceService {
       absentLessons,
       attendancePercent,
     };
+  }
+
+  async attendanceClassPerformance(query: AttendanceStatsQuery): Promise<TotalAttendanceResponse> {
+    const { classId, from, to } = query;
+
+    const where: any = { schedule: { classId } };
+
+
+    if(from || to) {
+         where.date = {  
+             ...(from && {gte: from}),
+             ...(to && {lte: to})
+         }
+    }
+
+    const attendances = await this.prisma.attendance.findMany({
+      where,
+      include: {entries: true},
+    });
+
+    const totalStudents = await this.prisma.student.count({where: {classId}});
+
+    let totalPresentAttendances = 0;
+    let totalPossibleAttendances = 0;
+    
+    for (const attendance of attendances) {
+      totalPossibleAttendances += totalStudents;
+
+      const presentCount = attendance.entries.filter(entry => entry.present === true).length;
+      
+      totalPresentAttendances += presentCount;
+    }
+    
+    const totalLessons = attendances.length;
+    const classAttendancePercent = totalPossibleAttendances === 0 ? 0 : Math.round(( totalPresentAttendances / totalPossibleAttendances) * 100);
+  
+   return {
+      totalLessons,
+      totalStudents,
+      totalPresentAttendances,
+      totalPossibleAttendances,
+      classAttendancePercent,
+   };
   }
 }

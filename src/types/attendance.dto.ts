@@ -63,5 +63,19 @@ export interface AttendanceStatsResponse {
   attendancePercent: number;
 }
 
+export interface TotalAttendanceDTO {
+  classId?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface TotalAttendanceResponse {
+  totalLessons: number;
+  totalStudents: number;
+  totalPossibleAttendances: number;
+  totalPresentAttendances: number;
+  classAttendancePercent: number;
+}
+
 
 
