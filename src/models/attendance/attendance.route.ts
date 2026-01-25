@@ -14,6 +14,8 @@ import { roleMiddleware } from "../../middilwares/role.middleware";
    attendanceController.createAttendance,
  );
  
-  router.get("/get_attendances", attendanceController.getAttendances);
+router.get("/get_attendances", attendanceController.getAttendances);
+
+router.get("/student_attendance/:studentId", attendanceController.getStudentAttendancePersent);
  
  export default router;

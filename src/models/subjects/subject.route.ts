@@ -20,6 +20,12 @@ router.post(
   subjectController.attachSubjectToTeacher,
 );
 
+router.get(
+  "/get_subjects",
+  roleMiddleware("TEACHER", "ADMIN"),
+  subjectController.getAllSubjects,
+);
+
 router.delete(
   "/delete_subject/:subjectId",
   roleMiddleware("ADMIN"),

@@ -43,3 +43,11 @@ export type AttendanceWithEntries = Prisma.AttendanceGetPayload<{
     };
   };
 }>;
+
+export interface StudentAttendancePercent {
+  studentId: string;
+  totalLessons: number;
+  presentLessons: number;
+  attendancePercent: number;
+}
+

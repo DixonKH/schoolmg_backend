@@ -27,7 +27,20 @@ export class AttendanceController {
             const attendances = await attendanceService.getAttendances(req.query, req.user!);
             return res.status(200).json({
                 success: true,
-                data: attendances,
+                data: attendances, 
+            });
+        }catch(e) {
+            next(e);
+        }
+    }
+
+    async getStudentAttendancePersent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { studentId } = req.params;
+            const attendances = await attendanceService.getStudentAttendancePersent(studentId);
+            return res.status(200).json({
+                success: true,
+                data: attendances, 
             });
         }catch(e) {
             next(e);

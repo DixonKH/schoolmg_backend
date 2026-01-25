@@ -1,10 +1,11 @@
-import { tr } from "zod/v4/locales";
+import { en, tr } from "zod/v4/locales";
 import { PrismaClient } from "../../generated/prisma";
 import {
   AttendanceWithEntries,
   AttendanceWithRelations,
   CreateAttendanceDTO,
   GetAttendanceQuery,
+  StudentAttendancePercent,
 } from "../../types/attendance.dto";
 
 export class AttendanceService {
@@ -95,5 +96,38 @@ export class AttendanceService {
         schedule: true,
       },
     });
+  }
+
+  async getStudentAttendancePersent(studentId: string): Promise<StudentAttendancePercent> {
+      const student = await this.prisma.student.findUnique({
+        where: { id: studentId },
+      })
+
+      if (!student) throw new Error("Student not found")
+
+    const entries = await this.prisma.attendanceEntry.findMany({
+      where: {studentId},
+      select: { present: true },
+    });
+
+    const totalLessons = entries.length;
+
+    if(totalLessons === 0) {
+      return {
+        studentId,
+        totalLessons,
+        presentLessons: 0,
+        attendancePercent: 0,
+      }
+    }
+    const presentLessons = entries.filter(entry => entry.present).length;
+
+    const attendancePercent = (presentLessons / totalLessons) * 100;
+    return {
+      studentId,
+      totalLessons,
+      presentLessons,
+      attendancePercent,
+    };
   }
 }

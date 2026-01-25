@@ -26,6 +26,19 @@ export class SubjectController {
       }
     }
 
+    async getAllSubjects(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+      try {
+        const subjects = await subjectService.getAllSubjects();
+        
+        return res.status(200).json({
+          success: true,
+          data: subjects,
+        });
+      } catch (e: any) {
+        next(e);
+      }
+    }
+
     async attachSubjectToTeacher(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
       try {
         const { subjectId, teacherId} = req.params;

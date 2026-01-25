@@ -11,6 +11,11 @@ export class SubjectService {
     return newSubject;
   }
 
+  async getAllSubjects(): Promise<Subject[]> {
+    const subjects = await this.prisma.subject.findMany();
+    return subjects;
+  }
+
   async attachSubjectToTeacher(teacherId: string, subjectId: string): Promise<Teacher> {
     return this.prisma.teacher.update({
       where: { id: teacherId },
