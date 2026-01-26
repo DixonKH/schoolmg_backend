@@ -1,3 +1,6 @@
+import {z} from "zod";
+import { studentAverageSchema } from "../schemas/student.schema";
+
 // student.types.ts
 export interface CreateStudentDTO {
   email: string;
@@ -29,4 +32,13 @@ export interface UpdateStudentDTO {
     avatarPublicId?: string;
     avatar?: string;
     address?: string;
+}
+
+export type StudentAverageScoreDTO = z.infer<typeof studentAverageSchema>["query"];
+
+export type StudentAverageResponse = {
+    studentId: string;
+    subjectId?: string;
+    averageScore: number;
+    totalScore: number;
 }

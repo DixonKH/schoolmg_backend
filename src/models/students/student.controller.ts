@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
-import { CreateStudentDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
+import { CreateStudentDTO, StudentAverageScoreDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
@@ -58,7 +58,7 @@ export class StudentController {
     }
   }
 
-  async updateAvatar(req: AuthRequest, res: Response, next: NextFunction) {
+  async updateAvatar(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | undefined> {
     const userId = req.user!.id;
     if (!req.file) {
       return res.status(400).json({ message: "Avatar not found" });
@@ -103,6 +103,26 @@ export class StudentController {
         data: students,
       });
     } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async studentAverageScore(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    try {
+       const {studentId, subjectId, from, to} = req.query as StudentAverageScoreDTO;
+
+       const studentAverageScore = await studentService.studentAverageScore({
+         studentId,
+         subjectId,
+         from,
+         to
+       });
+
+       return res.status(200).json({
+         success: true,
+         data: studentAverageScore
+       })
+    }catch(e: any) {
       next(e);
     }
   }

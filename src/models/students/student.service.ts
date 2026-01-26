@@ -2,6 +2,8 @@ import cloudinary from "../../config/cloudinary";
 import { PrismaClient, Student, UserRole } from "../../generated/prisma";
 import {
   CreateStudentDTO,
+  StudentAverageResponse,
+  StudentAverageScoreDTO,
   StudentResponse,
   UpdateStudentDTO,
 } from "../../types/student.dto";
@@ -109,5 +111,42 @@ export class StudentService {
     }
     console.log("students: ", students);
     return students;
+  }
+
+  async studentAverageScore(query: StudentAverageScoreDTO): Promise<StudentAverageResponse> {
+      const { studentId, subjectId, from, to } = query;
+
+      const studentGrades = await this.prisma.journalEntry.findMany({
+        where: {
+          studentId,
+          grade: { not: null },
+          ...(from || to ? {
+            ...(from && { date: { gte: from } }),
+            ...(to && { date: { lte: to } }),
+          } : {}),
+          ...(subjectId ? {journal: {subjectId}} : {})
+        },
+        select: {grade: true }
+      });
+
+      
+      console.log("students: ", studentGrades);
+      const totalScore = studentGrades.reduce((acc, curr) => acc + (curr.grade ?? 0), 0);
+      const averageScore = totalScore / studentGrades.length;
+      
+      if(studentGrades.length === 0) {
+         return {
+            studentId,
+            subjectId,
+            averageScore: 0,
+            totalScore: 0
+         }
+      }
+      return{
+        studentId,
+        subjectId,
+        averageScore,
+        totalScore
+      };
   }
 }
