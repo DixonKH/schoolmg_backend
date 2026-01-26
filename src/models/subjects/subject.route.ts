@@ -32,4 +32,10 @@ router.delete(
   subjectController.deleteSubject,
 );
 
+router.get(
+  "/subject_average_score",
+  roleMiddleware("ADMIN", "TEACHER"),
+  subjectController.subjectAverageScore,
+);
+
 export default router;

@@ -1,4 +1,5 @@
 import { PrismaClient } from "../../generated/prisma";
+import { SubjectAverageDTO } from "../../types/subject.dto";
 import { SubjectService } from "./subject.service";
 import { NextFunction, Request, Response } from "express";
 
@@ -6,66 +7,103 @@ const prisma = new PrismaClient();
 const subjectService = new SubjectService(prisma);
 
 export class SubjectController {
+  async createSubject(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { subject } = req.body;
+      const newSubject = await subjectService.createSubject(subject);
 
-    async createSubject(
-      req: Request,
-      res: Response,
-      next: NextFunction,
-    ): Promise<Response | undefined> {
-      try {
-        const { subject } = req.body;
-        const newSubject = await subjectService.createSubject(subject);
-        
-        return res.status(200).json({
-          success: true,
-          message: "Subject created successfully",
-          data: newSubject,
-        });
-      } catch (e: any) {
-        next(e);
-      }
+      return res.status(200).json({
+        success: true,
+        message: "Subject created successfully",
+        data: newSubject,
+      });
+    } catch (e: any) {
+      next(e);
     }
+  }
 
-    async getAllSubjects(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-      try {
-        const subjects = await subjectService.getAllSubjects();
-        
-        return res.status(200).json({
-          success: true,
-          data: subjects,
-        });
-      } catch (e: any) {
-        next(e);
-      }
-    }
+  async getAllSubjects(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const subjects = await subjectService.getAllSubjects();
 
-    async attachSubjectToTeacher(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-      try {
-        const { subjectId, teacherId} = req.params;
-        const subject = await subjectService.attachSubjectToTeacher(subjectId, teacherId);
-        
-        return res.status(200).json({
-          success: true,
-          message: "Subject attech to teacher successfully",
-          data: subject,
-        });
-      } catch (e: any) {
-        next(e);
-      }
+      return res.status(200).json({
+        success: true,
+        data: subjects,
+      });
+    } catch (e: any) {
+      next(e);
     }
+  }
 
-    async deleteSubject(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-      try {
-        const { subjectId } = req.params;
-        const deletedSubject = await subjectService.deleteSubject(subjectId);
-        
-        return res.status(200).json({
-          success: true,
-          message: "Subject deleted successfully",
-          data: deletedSubject,
-        });
-      } catch (e: any) {
-        next(e);
-      }
+  async attachSubjectToTeacher(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { subjectId, teacherId } = req.params;
+      const subject = await subjectService.attachSubjectToTeacher(
+        subjectId,
+        teacherId,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Subject attech to teacher successfully",
+        data: subject,
+      });
+    } catch (e: any) {
+      next(e);
     }
+  }
+
+  async deleteSubject(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { subjectId } = req.params;
+      const deletedSubject = await subjectService.deleteSubject(subjectId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Subject deleted successfully",
+        data: deletedSubject,
+      });
+    } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async subjectAverageScore(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | undefined> {
+    try {
+      const { subjectId, classId, from, to } = req.query as SubjectAverageDTO;
+      const averageScore = await subjectService.subjectAverageScore({
+        subjectId,
+        classId,
+        from,
+        to,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: averageScore,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

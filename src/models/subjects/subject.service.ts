@@ -1,4 +1,8 @@
 import { PrismaClient, Subject, Teacher } from "../../generated/prisma";
+import {
+  SubjectAverageDTO,
+  SubjectAverageResponse,
+} from "../../types/subject.dto";
 
 export class SubjectService {
   constructor(private prisma: PrismaClient) {}
@@ -16,7 +20,10 @@ export class SubjectService {
     return subjects;
   }
 
-  async attachSubjectToTeacher(teacherId: string, subjectId: string): Promise<Teacher> {
+  async attachSubjectToTeacher(
+    teacherId: string,
+    subjectId: string,
+  ): Promise<Teacher> {
     return this.prisma.teacher.update({
       where: { id: teacherId },
       data: {
@@ -44,4 +51,64 @@ export class SubjectService {
     return { message: "Subject deleted" };
   }
 
+  async subjectAverageScore(
+    query: SubjectAverageDTO,
+  ): Promise<SubjectAverageResponse> {
+    const { classId, subjectId, from, to } = query;
+
+    const where: any = {
+      classId,
+      subjectId,
+    };
+
+    if (from && to) {
+      where.entries = {
+        some: {
+          ...(from && { gte: from }),
+          ...(to && { lte: to }),
+          grade: { not: null },
+        },
+      };
+    }
+
+    const journals = await this.prisma.journal.findMany({
+      where,
+      select: {
+        entries: {
+          where: {
+            grade: { not: null },
+            ...(from  || to ? {
+              ...(from && { date: { gte: from } }),
+              ...(to && { date: { lte: to } }),
+            } : {}),
+          },
+          select: {
+            grade: true,
+          },
+        },
+      },
+    });
+
+    const allGrades = journals.flatMap((score) => score.entries.map((entry) => entry.grade!));
+
+    if (allGrades.length === 0) {
+      return {
+        subjectId,
+        classId,
+        averageScore: 0,
+        totalScore: 0,
+      };
+    }
+
+    const totalScores = allGrades.reduce((sum, grade) => sum + grade, 0);
+
+    const averageScore = Math.round(totalScores / allGrades.length);
+
+    return {
+      subjectId,
+      classId,
+      averageScore,
+      totalScore: allGrades.length,
+    };
+  }
 }
