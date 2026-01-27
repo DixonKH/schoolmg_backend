@@ -100,40 +100,27 @@ export class JournalService {
     journalId: string,
     data: CreateJournalEntryDTO,
   ): Promise<JournalEntry> {
-    const ExistStudent = await this.prisma.student.findUnique({
-      where: { id: data.studentId },
-    });
+    return await this.prisma.$transaction(async (tx) => {
+      const journal = await tx.journal.findUnique({
+        where: { id: journalId },
+      });
+      if (!journal) throw new Error("Journal not found");
 
-    if (!ExistStudent) {
-      throw new Error("Student not found");
-    }
-
-    const ExistJournalEntry = await this.prisma.journalEntry.findUnique({
-      where: {
-        journalId_studentId: {
+      const journalEntry = await this.prisma.journalEntry.create({
+        data: {
           journalId,
           studentId: data.studentId,
+          date: data.date,
+          present: data.present ?? null,
+          grade: data.grade ?? null,
+          gradeType: data.gradeType ?? null,
         },
-      },
-    });
+      });
 
-    if (ExistJournalEntry) {
-      throw new Error("This student already has entry in this journal");
-    }
+      await this.syncGradeFromJournalEntry(tx, journalEntry, journal);
 
-    const journalEntry = await this.prisma.journalEntry.create({
-      data: {
-        journalId,
-        studentId: data.studentId,
-        date: data.date,
-        present: data.present ?? null,
-        grade: data.grade ?? null,
-        gradeType: data.gradeType ?? null,
-      },
-    });
-
-    console.log("journalEntry: ", journalEntry);
-    return journalEntry;
+      return journalEntry;
+    })
   }
 
   async bulkCreateEntries(
@@ -177,22 +164,52 @@ export class JournalService {
     entries: UpdateJournalEntryDTO[],
   ): Promise<{ updated: number }> {
     return this.prisma.$transaction(async (txt) => {
-      for (const entry of entries) {
-        await txt.journalEntry.update({
+
+      const journal = await txt.journal.findUnique({ where: { id: journalId }});
+
+      for (const e of entries) {
+       const entry = await txt.journalEntry.update({
           where: {
             journalId_studentId: {
               journalId,
-              studentId: entry.studentId,
+              studentId: e.studentId,
             },
           },
           data: {
-            present: entry.present ?? null,
-            grade: entry.grade ?? null,
-            gradeType: entry.gradeType ?? null,
+            present: e.present ?? null,
+            grade: e.grade ?? null,
+            gradeType: e.gradeType ?? null,
           },
         });
+
+        await this.syncGradeFromJournalEntry(txt, entry, journal);
       }
       return { updated: entries.length };
+    });
+  }
+
+  async syncGradeFromJournalEntry(tx: any, entry: any, journal: any) {
+    if(entry.grade == null) return;
+
+    await tx.grade.upsert({
+      where: {
+        studentId_subjectId_date: {
+          studentId: entry.studentId,
+          subjectId: journal.subjectId,
+          date: entry.date,
+        }
+      },
+      update: {
+        value: entry.grade,
+        type: entry.gradeType,
+      },
+      create: {
+        value: entry.grade,
+        type: entry.gradeType,
+        date: entry.date,
+        studentId: entry.studentId,
+        subjectId: journal.subjectId,
+      }
     });
   }
 }

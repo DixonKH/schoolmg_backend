@@ -1,4 +1,5 @@
 import { Class, PrismaClient } from "../../generated/prisma";
+import { ClassAverageScoreDTO } from "../../types/class.dto";
 import { ClassService } from "./class.service";
 import { NextFunction, Request, Response } from "express";
 
@@ -28,7 +29,7 @@ export class ClassController {
       next(e);
     }
   }
-
+ 
   async getAllClasses(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
     try {
       const classes = await classService.getAllClasses();
@@ -37,6 +38,25 @@ export class ClassController {
         data: classes,
       });
     } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async classAverageScore(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    try {
+      const {classId, subjectId, from, to} = req.query as ClassAverageScoreDTO;
+      const classAverageScore = await classService.classAverageScore({
+        classId,
+        subjectId,
+        from,
+        to
+      });
+      
+      return res.status(200).json({
+        success: true,
+        data: classAverageScore
+      })
+    }catch(e: any) {
       next(e);
     }
   }

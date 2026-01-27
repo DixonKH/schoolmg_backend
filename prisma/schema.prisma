@@ -137,6 +137,8 @@ model Student {
   attendanceEntries  AttendanceEntry[]
 
   createdAt      DateTime @default(now())
+  @@index([classId])
+  @@index([status])
 }
 
 model Teacher {
@@ -222,6 +224,7 @@ model Journal {
   createdAt DateTime @default(now())
 
   @@unique([date, classId, subjectId])
+  @@index([classId, subjectId])
 }
 
 model JournalEntry {
@@ -242,6 +245,7 @@ model JournalEntry {
   createdAt DateTime @default(now())
 
   @@unique([journalId, studentId])
+  @@index([studentId])
 }
 
 model Schedule {
@@ -293,6 +297,7 @@ model AttendanceEntry {
   student       Student @relation(fields: [studentId], references: [id])
 
   @@unique([attendanceId, studentId])
+  @@index([studentId])
 }
 
 
@@ -307,6 +312,8 @@ model Payment {
   student   Student        @relation(fields: [studentId], references: [id])
 
   createdAt DateTime @default(now())
+  @@index([studentId])
+  @@index(status)
 }
 
 model Notification {

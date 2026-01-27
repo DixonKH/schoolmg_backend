@@ -29,3 +29,13 @@ export interface UpdateTeacherDTO {
   subjects?: string[];
   classes?: string[];
 }
+
+export type TeacherMeResponse = {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  birthDate: string | null;
+  address: string | null;
+  subjects: {id: string, name: string}[];
+  classes: {id: string, name: string}[];
+}

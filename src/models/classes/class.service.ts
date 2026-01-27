@@ -1,5 +1,5 @@
 import { Class, PrismaClient } from "../../generated/prisma";
-import { ClassDTO } from "../../types/class.dto";
+import { ClassAverageResponse, ClassAverageScoreDTO, ClassDTO, ClassResponse } from "../../types/class.dto";
 
 export class ClassService {
   constructor(private prisma: PrismaClient) {}
@@ -25,8 +25,8 @@ export class ClassService {
     console.log("class: ", class_);
     return class_;
   }
-
-  async getAllClasses(): Promise<any[]> {
+ 
+  async getAllClasses(): Promise<ClassResponse[]> {
     const classes = await this.prisma.class.findMany({
       select: {
         id: true,
@@ -53,18 +53,44 @@ export class ClassService {
         }
       }
     });
-    if(!classes.length) throw new Error("Classes not found");
+    if(classes.length === 0) throw new Error("Classes not found");
 
-    const response = classes.map((cls) => ({
-      id: cls.id,
-      name: cls.name,
-      capacity: cls.capacity,
-      teacher: cls.teacher ? {id: cls.teacher.id, fullName: cls.teacher.fullName, phone: cls.teacher.phone} : null,
-      students: cls.students.map((s) => ({id: s.id, fullName: s.fullName})),
-      subjects: cls.subjects.map((s) => ({id: s.id, name: s.name}))
-    }))
+    console.log("classes: ", classes);
+    return classes;
+  }
 
-    console.log("classes: ", response);
-    return response;
+  async classAverageScore(query: ClassAverageScoreDTO): Promise<ClassAverageResponse> {
+    const { classId, subjectId, from, to } = query;
+    const classGrade = await this.prisma.journalEntry.findMany({
+      where: {
+        ...(classId || subjectId ? {journal: {
+          ...(classId && {classId}),
+          ...(subjectId && {subjectId})
+        }} : {}),
+        grade: { not: null },
+        ...(from || to ? {
+          ...(from && {date: {gte: from}}),
+          ...(to && {date: {lte: to}})
+        } : {})
+      },
+      select: {grade: true}
+    });
+
+    if(classGrade.length === 0) {
+       return {
+          classId,
+          subjectId: undefined,
+          averageScore: 0,
+          totalGrade: 0
+       }
+    }
+    const totalGrade = classGrade.reduce((acc, curr) => acc + (curr.grade ?? 0), 0);
+    const averageScore = Math.round(totalGrade / classGrade.length);
+    return{
+      classId,
+      subjectId,
+      averageScore,
+      totalGrade
+    }
   }
 }

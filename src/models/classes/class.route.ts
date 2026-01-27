@@ -6,7 +6,7 @@ import { roleMiddleware } from "../../middilwares/role.middleware";
 const router = Router();
 const classController = new ClassController();
 router.use(authMiddleware);
-
+ 
 router.post(
   "/create_class",
   roleMiddleware("ADMIN"),
@@ -17,6 +17,12 @@ router.get(
   "/get_classes",
   roleMiddleware("TEACHER", "ADMIN"),
   classController.getAllClasses,
+);
+
+router.get(
+  "/class_average_score",
+  roleMiddleware("TEACHER", "ADMIN"),
+  classController.classAverageScore,
 );
 
 export default router;

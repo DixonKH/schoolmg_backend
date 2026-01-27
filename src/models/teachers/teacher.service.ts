@@ -1,25 +1,33 @@
 import cloudinary from "../../config/cloudinary";
 import { Prisma, PrismaClient, Teacher, UserRole } from "../../generated/prisma";
-import { CreateTeacherDTO, TeacherResponse, UpdateTeacherDTO } from "../../types/teacher.dto";
+import { CreateTeacherDTO, TeacherMeResponse, TeacherResponse, UpdateTeacherDTO } from "../../types/teacher.dto";
 import * as bcrypt from "bcrypt";
-
-type TeacherWithRelations = Prisma.TeacherGetPayload<{
-  include: {
-    subjects: true,
-    classes: true
-  }
-}>
 
 export class TeacherService {
   constructor(private prisma: PrismaClient) {}
 
-  async getMe(teacherId: string): Promise<Teacher> {
+  async getMe(teacherId: string): Promise<TeacherMeResponse> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: teacherId },
-       include: {
-         subjects: true, 
-         classes: true     
-      }
+       select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        birthDate: true,
+        address: true,
+        subjects: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        classes: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+       }
     });
 
     if (!teacher) {
