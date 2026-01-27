@@ -198,13 +198,15 @@ model Grade {
   id        String   @id @default(uuid())
   value     Float
   type      GradeType?
-  date      DateTime?
+  date      String?
 
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
 
   subjectId String
   subject   Subject  @relation(fields: [subjectId], references: [id])
+
+  @@unique([studentId, subjectId, date])
 }
 
 model Journal {

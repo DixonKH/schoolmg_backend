@@ -97,7 +97,7 @@ export class JournalService {
   }
 
   async createJournalEntry(
-    journalId: string,
+    journalId: string, 
     data: CreateJournalEntryDTO,
   ): Promise<JournalEntry> {
     return await this.prisma.$transaction(async (tx) => {

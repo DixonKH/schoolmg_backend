@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { PrismaClient, Teacher } from "../../generated/prisma";
+import { PrismaClient } from "../../generated/prisma";
 import { TeacherService } from "./teacher.service";
 import { AuthRequest } from "../../types/request.type";
 import {
   CreateTeacherDTO,
+  TeacherMeResponse,
   TeacherResponse,
   UpdateTeacherDTO,
 } from "../../types/teacher.dto";
@@ -19,7 +20,7 @@ export class TeacherController {
   ): Promise<Response | undefined> {
     const teacherId = req.user!.id;
     try {
-      const teacher: Teacher = await teacherService.getMe(teacherId);
+      const teacher: TeacherMeResponse = await teacherService.getMe(teacherId);
 
       return res.status(200).json({
         success: true,
