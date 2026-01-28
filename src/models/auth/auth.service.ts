@@ -2,6 +2,7 @@ import { PrismaClient, User } from "../../generated/prisma";
 import { LoginDTO, RegisterDTO } from "../../types/auth.dto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
@@ -14,7 +15,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error("User already exists");
+      throw new Errors(HttpCode.BAD_REQUEST, Message.EXIST_USER);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,13 +40,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new Error("Invalid password");
+      throw new Errors(HttpCode.NOT_FOUND, Message.WRONG_PASSWORD);
     }
 
     const token = jwt.sign(

@@ -8,6 +8,7 @@ import {
   UpdateStudentDTO,
 } from "../../types/student.dto";
 import * as bcrypt from "bcrypt";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class StudentService {
   constructor(private prisma: PrismaClient) {}
@@ -20,7 +21,7 @@ export class StudentService {
     });
 
     if (existingUser) {
-      throw new Error("Username already exists");
+      throw new Errors(HttpCode.BAD_REQUEST, Message.EXIST_USER);
     }
 
     return await this.prisma.$transaction(async (prisma) => {
@@ -62,7 +63,7 @@ export class StudentService {
       where: { userId },
     });
     if (!student) {
-      throw new Error("Student not found");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
     }
     return student;
   }
@@ -74,7 +75,7 @@ export class StudentService {
     const user = await this.prisma.student.findUnique({
       where: { userId },
     });
-    if (!user) throw new Error("Student not found");
+    if (!user) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
     if (data.avatarPublicId && user.avatarPublicId) {
       await cloudinary.uploader.destroy(user.avatarPublicId);
@@ -107,7 +108,7 @@ export class StudentService {
       },
     });
     if (!students.length) {
-      throw new Error("Students not found");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
     }
     console.log("students: ", students);
     return students;

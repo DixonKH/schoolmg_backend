@@ -70,7 +70,7 @@ export class AttendanceController {
                 success: true,
                 data: attendances, 
             });
-        }catch(e) {
+        }catch(e) { 
             next(e);
         }
     }

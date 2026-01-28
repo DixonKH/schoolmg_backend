@@ -2,6 +2,7 @@ import cloudinary from "../../config/cloudinary";
 import { Prisma, PrismaClient, Teacher, UserRole } from "../../generated/prisma";
 import { CreateTeacherDTO, TeacherMeResponse, TeacherResponse, UpdateTeacherDTO } from "../../types/teacher.dto";
 import * as bcrypt from "bcrypt";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class TeacherService {
   constructor(private prisma: PrismaClient) {}
@@ -31,7 +32,7 @@ export class TeacherService {
     });
 
     if (!teacher) {
-      throw new Error("Teacher not found");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
     }
 
     console.log("teacher: ", teacher);
@@ -46,7 +47,7 @@ export class TeacherService {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: teacherId },
     });
-    if (!teacher) throw new Error("Teacher not found");
+    if (!teacher) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
     if(data.avatar && teacher.avatarPublicId) {
       await cloudinary.uploader.destroy(teacher.avatarPublicId);

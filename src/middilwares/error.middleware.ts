@@ -1,15 +1,18 @@
 import { NextFunction, Request, Response } from "express";
+import Errors from "../utils/Error";
 
 
-export const errorMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
-    console.log(err);
+export const errorMiddleware = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
+    console.error(err);
 
-    const statusCode = err.statusCode || 500;
-    const message = err.message || "Something went wrong";
+    if(err instanceof Errors) {
+         res.status(err.code).json(err.toJSON());
+         return;
+    }
 
-    return res.status(statusCode).json({
-        success: false,
-        message,
-        ...(process.env.NODE_ENV === "production" && [message, err.stack])
-    })
+     res.status(Errors.standard.code).json({
+        code: Errors.standard.code,
+        message: Errors.standard.message
+     })
+ 
 }

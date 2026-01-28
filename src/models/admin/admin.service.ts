@@ -5,6 +5,7 @@ import {
   UserRole,
 } from "../../generated/prisma";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class AdminService {
   constructor(private prisma: PrismaClient) {}
@@ -73,7 +74,7 @@ export class AdminService {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
     }
 
     console.log("user: ", user);
@@ -86,7 +87,7 @@ export class AdminService {
         where: { id },
       });
 
-      if (!user) throw new Error("User not found");
+      if (!user) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
       const deletedUser = await prisma.user.update({
         where: { id },

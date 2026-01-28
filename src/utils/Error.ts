@@ -12,11 +12,13 @@ export enum HttpCode {
 export enum Message {
   SOMETHING_WENT_WRONG = "Something went wrong!",
   NO_DATA_FOUND = "No data is found!",
+  NO_USER_FOUND = "No user is found!",
   CREATE_FAILED = "Create is failed!",
   UPDATE_FAILED = "Update is failed!",
 
   USED_NICK_PHONE = "You are inserting already username or phone!",
   TOKEN_CREATION_FAILED = "Token creation error!",
+  EXIST_USER = "User with that username is already exist!",
   NO_MEMBER_NICK = "No member with that username!",
   BLOCKED_USER = "You have been blocked, contact with admin!",
   WRONG_PASSWORD = "Wrong password intered, please try again!",
@@ -25,17 +27,26 @@ export enum Message {
 
 class Errors extends Error {
     public code: HttpCode
-    public message: Message
+    public override message: Message
 
-    static standart = {
+    static readonly standard = {
         code: HttpCode.INTERNAL_SERVER_ERROR,
         message: Message.SOMETHING_WENT_WRONG
-    }
+    } as const;
 
     constructor(statusCode: HttpCode, statusMessage: Message) {
-        super()
+        super(statusMessage);
         this.code = statusCode;
         this.message = statusMessage;
+
+        Object.setPrototypeOf(this, Errors.prototype);
+    }
+
+    toJSON() {
+        return {
+            code: this.code,
+            message: this.message,
+        };
     }
 }
 

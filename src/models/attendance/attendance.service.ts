@@ -1,4 +1,3 @@
-import { en, tr } from "zod/v4/locales";
 import { PrismaClient } from "../../generated/prisma";
 import {
   AttendanceStatsQuery,
@@ -8,9 +7,9 @@ import {
   CreateAttendanceDTO,
   GetAttendanceQuery,
   StudentAttendancePercent,
-  TotalAttendanceDTO,
   TotalAttendanceResponse,
 } from "../../types/attendance.dto";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class AttendanceService {
   constructor(private prisma: PrismaClient) {}
@@ -23,7 +22,7 @@ export class AttendanceService {
         where: { id: data.scheduleId },
       });
 
-      if (!schedule) throw new Error("Schedule not found");
+      if (!schedule) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       const attendance = await prisma.attendance.upsert({
         where: {
@@ -109,7 +108,7 @@ export class AttendanceService {
       where: { id: studentId },
     });
 
-    if (!student) throw new Error("Student not found");
+    if (!student) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
     const entries = await this.prisma.attendanceEntry.findMany({
       where: { studentId },

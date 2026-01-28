@@ -1,5 +1,6 @@
 import { PrismaClient, Schedule } from "../../generated/prisma";
 import { CreateScheduleDto, TeacherWeeklySchedule, WeekSchedule } from "../../types/schedule.dto";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class ScheduleService {
   constructor(private prisma: PrismaClient) {}
@@ -9,17 +10,17 @@ export class ScheduleService {
       const class_ = await tx.class.findUnique({
         where: { id: data.classId },
       });
-      if (!class_) throw new Error("Class not found");
+      if (!class_) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       const teacher = await tx.teacher.findUnique({
         where: { id: data.teacherId },
       });
-      if (!teacher) throw new Error("Teacher not found");
+      if (!teacher) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
       const subject = await tx.subject.findUnique({
         where: { id: data.subjectId },
       });
-      if (!subject) throw new Error("Subject not found");
+      if (!subject) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       const classConflict = await tx.schedule.findFirst({
         where: {
@@ -73,7 +74,7 @@ export class ScheduleService {
       where: { id: classId },
     });
 
-    if (!class_) throw new Error("Class not found");
+    if (!class_) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     const schedules = await this.prisma.schedule.findMany({
       where: { classId },
@@ -117,7 +118,7 @@ export class ScheduleService {
       where: { id: teacherId },
     });
 
-    if (!teacher) throw new Error("Teacher not found");
+    if (!teacher) throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
 
     const schedules = await this.prisma.schedule.findMany({
       where: { teacherId },

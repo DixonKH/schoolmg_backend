@@ -3,6 +3,7 @@ import {
   SubjectAverageDTO,
   SubjectAverageResponse,
 } from "../../types/subject.dto";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class SubjectService {
   constructor(private prisma: PrismaClient) {}
@@ -42,7 +43,7 @@ export class SubjectService {
       where: { id: subjectId },
     });
 
-    if (!subject) throw new Error("Subject not found");
+    if (!subject) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     await this.prisma.subject.delete({
       where: { id: subjectId },

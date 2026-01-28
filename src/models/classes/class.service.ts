@@ -1,5 +1,6 @@
 import { Class, PrismaClient } from "../../generated/prisma";
 import { ClassAverageResponse, ClassAverageScoreDTO, ClassDTO, ClassResponse } from "../../types/class.dto";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class ClassService {
   constructor(private prisma: PrismaClient) {}
@@ -11,7 +12,7 @@ export class ClassService {
       });
 
       if (!teacher) {
-        throw new Error("Teacher not found");
+        throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
       }
     }
 
@@ -53,7 +54,7 @@ export class ClassService {
         }
       }
     });
-    if(classes.length === 0) throw new Error("Classes not found");
+    if(classes.length === 0) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     console.log("classes: ", classes);
     return classes;

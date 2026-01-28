@@ -11,6 +11,7 @@ import {
   JournalWithRelations,
   UpdateJournalEntryDTO,
 } from "../../types/journal.dto";
+import Errors, { HttpCode, Message } from "../../utils/Error";
 
 export class JournalService {
   constructor(private prisma: PrismaClient) {}
@@ -59,7 +60,7 @@ export class JournalService {
         },
       },
     });
-    if (!journal) throw new Error("Journal not found");
+    if (!journal) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     console.log("journal: ", journal);
     return journal satisfies JournalWithRelations;
@@ -91,7 +92,7 @@ export class JournalService {
       orderBy: { date: "desc" },
     });
 
-    if (!alljournals.length) throw new Error("Journals not found");
+    if (!alljournals.length) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     return alljournals;
   }
@@ -104,7 +105,7 @@ export class JournalService {
       const journal = await tx.journal.findUnique({
         where: { id: journalId },
       });
-      if (!journal) throw new Error("Journal not found");
+      if (!journal) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       const journalEntry = await this.prisma.journalEntry.create({
         data: {
