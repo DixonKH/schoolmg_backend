@@ -16,6 +16,4 @@ app.use(errorMiddleware);
 app.use(cors({ credentials: true, origin: true }));
 dotenv.config();
 
-
-
 export default app;
