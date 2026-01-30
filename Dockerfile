@@ -18,6 +18,8 @@ COPY tsconfig.json ./
 # Source code
 COPY src ./src
 
+ENV NODE_ENV=production
+
 # Build
 RUN npm run build 
 
