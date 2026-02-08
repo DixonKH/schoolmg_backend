@@ -9,11 +9,10 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
+app.use(cors({ origin: "http://localhost:3001", credentials: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 app.use("/", routes);
 app.use(errorMiddleware);
-app.use(cors({ credentials: true, origin: true }));
 dotenv.config();
 
 export default app;
