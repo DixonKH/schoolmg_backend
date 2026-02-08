@@ -20,8 +20,6 @@ router.post(
   studentController.createStudent,
 );
 
-router.get("/me", studentController.getMe);
-
 router.put(
   "/me/update",
   validateMiddleware(updateUserSchema),

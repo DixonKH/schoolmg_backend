@@ -9,8 +9,6 @@ const teacherController = new TeacherController();
 
 router.use(authMiddleware);
 
-router.get("/me", teacherController.getMe);
-
 router.put(
   "/me/update_profile",
   teacherController.updateProfile,

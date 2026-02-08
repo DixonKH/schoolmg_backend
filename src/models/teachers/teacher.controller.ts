@@ -4,7 +4,6 @@ import { TeacherService } from "./teacher.service";
 import { AuthRequest } from "../../types/request.type";
 import {
   CreateTeacherDTO,
-  TeacherMeResponse,
   TeacherResponse,
   UpdateTeacherDTO,
 } from "../../types/teacher.dto";
@@ -13,23 +12,6 @@ const prisma = new PrismaClient();
 const teacherService = new TeacherService(prisma);
 
 export class TeacherController {
-  async getMe(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | undefined> {
-    const teacherId = req.user!.id;
-    try {
-      const teacher: TeacherMeResponse = await teacherService.getMe(teacherId);
-
-      return res.status(200).json({
-        success: true,
-        data: teacher,
-      });
-    } catch (error: any) {
-      next(error);
-    }
-  }
 
   async updateProfile(
     req: AuthRequest,

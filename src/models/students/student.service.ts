@@ -58,16 +58,6 @@ export class StudentService {
     });
   }
 
-  async getMe(userId: string): Promise<Student> {
-    const student = await this.prisma.student.findUnique({
-      where: { userId },
-    });
-    if (!student) {
-      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
-    }
-    return student;
-  }
-
   async updateProfile(
     userId: string,
     data: UpdateStudentDTO,

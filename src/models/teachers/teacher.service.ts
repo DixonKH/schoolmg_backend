@@ -7,38 +7,6 @@ import Errors, { HttpCode, Message } from "../../utils/Error";
 export class TeacherService {
   constructor(private prisma: PrismaClient) {}
 
-  async getMe(teacherId: string): Promise<TeacherMeResponse> {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId: teacherId },
-       select: {
-        id: true,
-        fullName: true,
-        phone: true,
-        birthDate: true,
-        address: true,
-        subjects: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        classes: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-       }
-    });
-
-    if (!teacher) {
-      throw new Errors(HttpCode.NOT_FOUND, Message.NO_USER_FOUND);
-    }
-
-    console.log("teacher: ", teacher);
-    return teacher;
-  }
-
   async updateProfile(
     teacherId: string,
     data: UpdateTeacherDTO,

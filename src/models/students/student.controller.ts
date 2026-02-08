@@ -29,20 +29,6 @@ export class StudentController {
      }
    }
 
-  async getMe(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | undefined> {
-    const userId = req.user!.id;
-    try {
-      const user: Student = await studentService.getMe(userId);
-
-      return res.status(200).json({
-        success: true,
-        data: user,
-      });
-    } catch (error: any) {
-      next(error);
-    }
-  }
-
   async updateProfile(req: AuthRequest, res: Response, next: NextFunction):Promise<Response | undefined> {
     const userId = req.user!.id;
 
