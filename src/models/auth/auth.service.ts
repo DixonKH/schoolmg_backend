@@ -3,6 +3,7 @@ import { LoginDTO, RegisterDTO } from "../../types/auth.dto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Errors, { HttpCode, Message } from "../../utils/Error";
+import { AuthRequest } from "../../types/request.type";
 
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
@@ -51,13 +52,39 @@ export class AuthService {
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET as string,
+      process.env.JWT_SECRET! as string,
       {
-        expiresIn: "7d",
+        expiresIn: "20min",
       }
     );
 
     return { user, token };
+  }
+
+  async refresh(req: AuthRequest): Promise<{accessToken: string}>{
+      const refreshToken = req.cookies.refreshToken;
+
+      if(!refreshToken) throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
+
+      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET! as string) as {id: string};
+
+      if(!decoded) throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
+
+      const user = await this.prisma.user.findUnique({
+          where: { id: decoded.id },
+      });
+
+      if(!user) throw new Errors(HttpCode.UNAUTHORIZED, Message.NO_USER_FOUND);
+
+      const accessToken = jwt.sign(
+          { id: user.id, role: user.role },
+          process.env.JWT_SECRET! as string,
+          {
+              expiresIn: "20min",
+          }
+      );
+
+      return { accessToken };
   }
 
 }

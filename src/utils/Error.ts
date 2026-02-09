@@ -13,6 +13,7 @@ export enum Message {
   SOMETHING_WENT_WRONG = "Something went wrong!",
   NO_DATA_FOUND = "No data is found!",
   NO_USER_FOUND = "No user is found!",
+  TOKEN_NOT_FOUND = "Token is not found!",
   CREATE_FAILED = "Create is failed!",
   UPDATE_FAILED = "Update is failed!",
 

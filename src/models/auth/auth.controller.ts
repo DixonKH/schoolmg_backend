@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "../../generated/prisma";
 import { AuthService } from "./auth.service";
 import { ApiResponse, AuthResponse } from "../../types/response.type";
-import { RegisterInput } from "../../schemas/auth.schema";
 import { AuthRequest } from "../../types/request.type";
 import Errors, { HttpCode, Message } from "../../utils/Error";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const authService = new AuthService(prisma);
@@ -32,6 +32,21 @@ export class AuthController {
 
       const { user, token } = await authService.login({ username, password });
 
+      const refreshToken = jwt.sign(
+        { id: user.id },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: "30d",
+        },
+      );
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000 * 30, // 30 days
+      });
+
       const { password: _, ...safeUser } = user;
 
       return res.status(200).json({
@@ -42,6 +57,19 @@ export class AuthController {
           accessToken: token,
         },
       } satisfies ApiResponse<AuthResponse>);
+    } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.refresh(req);
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
     } catch (e: any) {
       next(e);
     }
