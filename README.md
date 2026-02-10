@@ -66,4 +66,46 @@ src/
 ├── prisma/
 │   └── schema.prisma
 └── utils/
+```
+## 🔐 Environment Variables
+
+- DATABASE_URL=postgresql://user:password@localhost:5432/school_db
+- JWT_SECRET=your_secret_key
+- PORT=3000
+
+- CLOUDINARY_CLOUD_NAME=xxxx
+- CLOUDINARY_API_KEY=xxxx
+- CLOUDINARY_API_SECRET=xxxx
+
+## Database setup
+
+- npx prisma migrate dev
+- npx prisma generate
+
+## Run locally
+
+- npm install
+- npm run build
+- npm start
+
+## 📈 Performance Notes
+
+- Indexed foreign keys
+- Minimal include usage
+- Date range filters
+- Optimized Prisma queries
+
+## Future Plans
+
+- Swagger API docs
+- Redis caching
+- WebSocket attendance
+
+## 👨‍💻 Author
+- Dilshod
+- Backend / Full-Stack Developer
+- Node.js • TypeScript • Prisma
+
+### ⭐️ Support
+If you like this project, don’t forget to ⭐️ the repository!
 
