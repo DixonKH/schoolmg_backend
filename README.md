@@ -1,9 +1,9 @@
-🎓 School Management Backend API
+# 🎓 School Management Backend API
 
 A full-featured School Management System Backend built with Node.js, TypeScript, Prisma, PostgreSQL, and Docker.
 This backend powers a modern school CRM including students, teachers, classes, subjects, attendance, journals, grades, and analytics.
 
-🚀 Tech Stack
+# 🚀 Tech Stack
 
 Node.js (v22)
 TypeScript
@@ -22,7 +22,7 @@ Admin / Staff
 Teacher
 Student
 
-🏫 Core School Modules
+# 🏫 Core School Modules
 
 Classes
 Subjects
@@ -31,12 +31,12 @@ Teachers
 Journals
 Schedule (weekly timetable)
 
-📒 Academic Management
+# 📒 Academic Management
 Journals (per class & subject)
 Journal Entries (attendance + grade)
 Grades & grading types
 
-✅ Attendance System
+# ✅ Attendance System
 Daily attendance per schedule
 Bulk attendance create/update
 Attendance analytics:
@@ -50,27 +50,7 @@ Subject average score
 Class average score
 Attendance percentage (date range supported)
 
-📁 Project Structure
-src/
-├── app.ts
-├── server.ts
-├── routes.ts
-├── middlewares/
-│   └── validate.middleware.ts
-├── models/
-│   ├── auth/
-│   ├── students/
-│   ├── teachers/
-│   ├── classes/
-│   ├── subjects/
-│   ├── attendance/
-│   ├── journals/
-│   └── analytics/
-├── prisma/
-│   └── schema.prisma
-└── utils/
-
-🔐 Environment Variables
+# 🔐 Environment Variables
 
 Create a .env file in the root:
 DATABASE_URL=postgresql://user:password@localhost:5432/school_db
@@ -95,30 +75,30 @@ Server runs on:
 
 http://localhost:3000
 
-🐳 Run with Docker
+# 🐳 Run with Docker
 Build image
 docker build -t school-backend .
 
 Run container
 docker run --env-file .env -p 3000:3000 school-backend
 
-🧪 API Validation
+# 🧪 API Validation
 
 All query & body validation is handled using Zod
 via validateMiddleware.
 
-📈 Performance Optimizations
+# 📈 Performance Optimizations
 Indexed foreign keys
 Minimal include usage
 Aggregations done in memory only when necessary
 Date filtering via indexed fields
 
-🔮 Future Improvements
+# 🔮 Future Improvements
 Redis caching
 Swagger API documentation
 WebSocket real-time attendance
 
-👨‍💻 Author
+# 👨‍💻 Author
 Dilshod
 Backend / Full-Stack Developer
 Node.js • TypeScript • Prisma
