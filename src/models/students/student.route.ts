@@ -34,6 +34,12 @@ router.put(
 router.get("/get_students/:classId", studentController.getAllStudentsByClass);
 
 router.get(
+  "/get_all_students",
+  roleMiddleware("TEACHER", "ADMIN"),
+  studentController.getAllStudents,
+);
+
+router.get(
   "/average_score",
   validateMiddleware(studentAverageSchema),
   studentController.studentAverageScore,

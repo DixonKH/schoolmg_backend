@@ -7,13 +7,18 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
        try {
          const authHeader = req.headers.authorization;
 
+         
          if(!authHeader) return res.status(401).json({message: "Token is not available"});
-             const token = authHeader.split(" ")[1];
+         const token = authHeader.split(" ")[1];
+
+         console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
          if(!token) return res.status(401).json({message: "Invalid token"});
          const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
 
          req.user = decoded; // req.user = { id, role }
+
+         console.log("DECODED:", decoded);
 
          next();
          

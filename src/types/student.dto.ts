@@ -1,5 +1,6 @@
 import {z} from "zod";
 import { studentAverageSchema } from "../schemas/student.schema";
+import { StudentStatus } from "../generated/prisma";
 
 // student.types.ts
 export interface CreateStudentDTO {
@@ -22,6 +23,29 @@ export interface StudentResponse {
   parentName?: string;
   phone?: string;
   classId: string;
+}
+
+export interface GetStudentsQuery {
+  page?: number;
+  limit?: number;
+  status?: StudentStatus;
+  classId?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: PaginationMeta;
 }
 
 export interface UpdateStudentDTO {

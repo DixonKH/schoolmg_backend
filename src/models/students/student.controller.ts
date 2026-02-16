@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Student } from "../../generated/prisma";
 import { StudentService } from "./student.service";
 import { AuthRequest } from "../../types/request.type";
-import { CreateStudentDTO, StudentAverageScoreDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
+import { CreateStudentDTO, GetStudentsQuery, StudentAverageScoreDTO, StudentResponse, UpdateStudentDTO } from "../../types/student.dto";
 
 const prisma = new PrismaClient();
 const studentService = new StudentService(prisma);
@@ -87,6 +87,19 @@ export class StudentController {
       return res.status(200).json({
         success: true,
         data: students,
+      });
+    } catch (e: any) {
+      next(e);
+    }
+  }
+
+  async getAllStudents(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    try {
+      const students = await studentService.getAllStudents(req.query);
+  
+      return res.status(200).json({
+        success: true,
+         ...students,
       });
     } catch (e: any) {
       next(e);

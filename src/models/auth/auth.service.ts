@@ -21,16 +21,25 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        role,
-      },
+    return await this.prisma.$transaction(async (txt) => {
+      const user = await txt.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          role: role,
+        },
+      });
+
+      await txt.staff.create({
+        data: {
+          username: user.username,
+          userId: user.id
+        }
+      })
+      console.log("User created: ", user);
+      return user;
     });
-    console.log("User created: ",user);
-    return user;
   }
 
   async login(data: LoginDTO): Promise<{ user: User; token: string }> {
@@ -55,36 +64,40 @@ export class AuthService {
       process.env.JWT_SECRET! as string,
       {
         expiresIn: "20min",
-      }
+      },
     );
 
     return { user, token };
   }
 
-  async refresh(req: AuthRequest): Promise<{accessToken: string}>{
-      const refreshToken = req.cookies.refreshToken;
+  async refresh(req: AuthRequest): Promise<{ accessToken: string }> {
+    const refreshToken = req.cookies.refreshToken;
 
-      if(!refreshToken) throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
+    if (!refreshToken)
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
 
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET! as string) as {id: string};
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET! as string,
+    ) as { id: string };
 
-      if(!decoded) throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
+    if (!decoded)
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_FOUND);
 
-      const user = await this.prisma.user.findUnique({
-          where: { id: decoded.id },
-      });
+    const user = await this.prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
 
-      if(!user) throw new Errors(HttpCode.UNAUTHORIZED, Message.NO_USER_FOUND);
+    if (!user) throw new Errors(HttpCode.UNAUTHORIZED, Message.NO_USER_FOUND);
 
-      const accessToken = jwt.sign(
-          { id: user.id, role: user.role },
-          process.env.JWT_SECRET! as string,
-          {
-              expiresIn: "20min",
-          }
-      );
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET! as string,
+      {
+        expiresIn: "20min",
+      },
+    );
 
-      return { accessToken };
+    return { accessToken };
   }
-
 }

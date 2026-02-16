@@ -5,6 +5,7 @@ import { ApiResponse, AuthResponse } from "../../types/response.type";
 import { AuthRequest } from "../../types/request.type";
 import Errors, { HttpCode, Message } from "../../utils/Error";
 import jwt from "jsonwebtoken";
+import { success } from "zod";
 
 const prisma = new PrismaClient();
 const authService = new AuthService(prisma);
@@ -42,9 +43,9 @@ export class AuthController {
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000 * 30, // 30 days
+        secure: false,
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
       const { password: _, ...safeUser } = user;
@@ -77,6 +78,7 @@ export class AuthController {
 
   async getMe(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      console.log("REQ.USER:", req.user);
       const { id, role } = req.user!;
 
       let profile: any = null;
@@ -103,8 +105,17 @@ export class AuthController {
       }
 
       if (role === "ADMIN") {
-        profile = await prisma.user.findUnique({
-          where: { id: id },
+        profile = await prisma.staff.findUnique({
+          where: { userId: id },
+          select: {
+            username: true,
+            fullName: true,
+            phone: true,
+            position: true,
+            avatar: true,
+            avatarPublicId: true,
+            address: true
+          }
         });
       }
 
@@ -113,9 +124,12 @@ export class AuthController {
       }
 
       return res.status(200).json({
-        id,
-        role,
-        profile,
+        success: true,
+        user: {
+          id,
+          role,
+          ...profile,
+        },
       });
     } catch (e: any) {
       next(e);

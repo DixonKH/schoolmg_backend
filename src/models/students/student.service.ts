@@ -1,7 +1,14 @@
 import cloudinary from "../../config/cloudinary";
-import { PrismaClient, Student, UserRole } from "../../generated/prisma";
+import {
+  Prisma,
+  PrismaClient,
+  Student,
+  UserRole,
+} from "../../generated/prisma";
 import {
   CreateStudentDTO,
+  GetStudentsQuery,
+  PaginatedResult,
   StudentAverageResponse,
   StudentAverageScoreDTO,
   StudentResponse,
@@ -9,6 +16,14 @@ import {
 } from "../../types/student.dto";
 import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../../utils/Error";
+
+type StudentWithClass = Prisma.StudentGetPayload<{
+  include: {
+    class: {
+      select: { id: true; name: true };
+    };
+  };
+}>;
 
 export class StudentService {
   constructor(private prisma: PrismaClient) {}
@@ -104,40 +119,91 @@ export class StudentService {
     return students;
   }
 
-  async studentAverageScore(query: StudentAverageScoreDTO): Promise<StudentAverageResponse> {
-      const { studentId, subjectId, from, to } = query;
+  async getAllStudents(
+    query: GetStudentsQuery,
+  ): Promise<PaginatedResult<StudentWithClass>> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-      const studentGrades = await this.prisma.journalEntry.findMany({
-        where: {
-          studentId,
-          grade: { not: null },
-          ...(from || to ? {
-            ...(from && { date: { gte: from } }),
-            ...(to && { date: { lte: to } }),
-          } : {}),
-          ...(subjectId ? {journal: {subjectId}} : {})
+    const where: Prisma.StudentWhereInput = {
+      ...(query.status && { status: query.status as any }),
+      ...(query.classId && { classId: query.classId }),
+      ...(query.search && {
+        fullName: {
+          contains: query.search,
+          mode: "insensitive",
         },
-        select: {grade: true }
-      });
+      }),
+    };
 
-      
-      console.log("students: ", studentGrades);
-      const totalScore = studentGrades.reduce((acc, curr) => acc + (curr.grade ?? 0), 0);
-      const averageScore = totalScore / studentGrades.length;
-      
-      if(studentGrades.length === 0) {
-         return {
-            studentId,
-            subjectId,
-            averageScore: 0,
-            totalScore: 0
-         }
-      }
-      return{
+    const students = await this.prisma.student.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        class: { select: { id: true, name: true } },
+      },
+    });
+
+    const total = await this.prisma.student.count({ where });
+    
+    if (!students.length) {
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    }
+
+    return {
+      data: students,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async studentAverageScore(
+    query: StudentAverageScoreDTO,
+  ): Promise<StudentAverageResponse> {
+    const { studentId, subjectId, from, to } = query;
+
+    const studentGrades = await this.prisma.journalEntry.findMany({
+      where: {
+        studentId,
+        grade: { not: null },
+        ...(from || to
+          ? {
+              ...(from && { date: { gte: from } }),
+              ...(to && { date: { lte: to } }),
+            }
+          : {}),
+        ...(subjectId ? { journal: { subjectId } } : {}),
+      },
+      select: { grade: true },
+    });
+
+    console.log("students: ", studentGrades);
+    const totalScore = studentGrades.reduce(
+      (acc, curr) => acc + (curr.grade ?? 0),
+      0,
+    );
+    const averageScore = totalScore / studentGrades.length;
+
+    if (studentGrades.length === 0) {
+      return {
         studentId,
         subjectId,
-        averageScore,
-        totalScore
+        averageScore: 0,
+        totalScore: 0,
       };
+    }
+    return {
+      studentId,
+      subjectId,
+      averageScore,
+      totalScore,
+    };
   }
 }
