@@ -1,4 +1,4 @@
-import { Class, PrismaClient } from "../../generated/prisma";
+import { Class, PrismaClient } from "@prisma/client";
 import { ClassAverageScoreDTO } from "../../types/class.dto";
 import { ClassService } from "./class.service";
 import { NextFunction, Request, Response } from "express";

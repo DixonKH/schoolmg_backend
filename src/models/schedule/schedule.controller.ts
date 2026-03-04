@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { ScheduleService } from "./schedule.service";
 import { NextFunction, Request, Response } from "express";
 
@@ -33,7 +33,7 @@ export class ScheduleController {
       const { id } = req.params;
       if (!id) throw new Error("classId is required");
 
-      const schedules = await scheduleService.getClassSchedules(id);
+      const schedules = await scheduleService.getClassSchedules(id as string);
  
       return res.status(200).json({
         success: true,
@@ -53,7 +53,7 @@ export class ScheduleController {
       const { id } = req.params;
       if (!id) throw new Error("teacherId is required");
 
-      const schedules = await scheduleService.getTeacherSchedules(id);
+      const schedules = await scheduleService.getTeacherSchedules(id as string);
  
       return res.status(200).json({
         success: true,

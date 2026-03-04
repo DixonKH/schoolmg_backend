@@ -1,4 +1,4 @@
-import { Class, PrismaClient } from "../../generated/prisma";
+import { Class, PrismaClient } from "@prisma/client";
 import { ClassAverageResponse, ClassAverageScoreDTO, ClassDTO, ClassResponse } from "../../types/class.dto";
 import Errors, { HttpCode, Message } from "../../utils/Error";
 

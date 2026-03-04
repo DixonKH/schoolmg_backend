@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { AttendanceService } from "./attendance.service";
 import { AuthRequest } from "../../types/request.type";
 import { AttendanceStatsQuery } from "../../types/attendance.dto";
@@ -38,7 +38,7 @@ export class AttendanceController {
     async getStudentAttendancePersent(req: Request, res: Response, next: NextFunction) {
         try {
             const { studentId } = req.params;
-            const attendances = await attendanceService.getStudentAttendancePersent(studentId);
+            const attendances = await attendanceService.getStudentAttendancePersent(studentId as string);
             return res.status(200).json({
                 success: true,
                 data: attendances, 

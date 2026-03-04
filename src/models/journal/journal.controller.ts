@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { JournalService } from "./journal.service";
 import { GetAllJournalFilter } from "../../types/journal.dto";
 
@@ -33,7 +33,7 @@ export class JournalController {
   ): Promise<Response | undefined> {
     try {
       const journalEntry = req.body;
-      const journalId = req.params.id;
+      const journalId = req.params.id as string;
       console.log("journalId: ", journalId);
       const newJournalEntry = await journalService.createJournalEntry(
         journalId,
@@ -56,7 +56,7 @@ export class JournalController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const journalId = req.params.id;
+      const journalId = req.params.id as string;
       const journal = await journalService.getJournalById(journalId);
 
       return res.status(200).json({
@@ -92,7 +92,7 @@ export class JournalController {
   ): Promise<Response | undefined> {
     try {
       const { entries } = req.body;
-      const journalId = req.params.id;
+      const journalId = req.params.id as string;
 
       const newJournalEntry = await journalService.bulkCreateEntries(
         journalId,
@@ -115,7 +115,7 @@ export class JournalController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const journalId = req.params.id;
+      const journalId = req.params.id as string;
       const { entries } = req.body;
       const updatedStudentEnrties = await journalService.bulkUpdateEntries(
         journalId,

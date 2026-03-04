@@ -1,5 +1,5 @@
 import cloudinary from "../../config/cloudinary";
-import { Prisma, PrismaClient, Teacher, UserRole } from "../../generated/prisma";
+import { Prisma, PrismaClient, Teacher, UserRole } from "@prisma/client";
 import { CreateTeacherDTO, TeacherMeResponse, TeacherResponse, UpdateTeacherDTO } from "../../types/teacher.dto";
 import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../../utils/Error";

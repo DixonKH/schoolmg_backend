@@ -1,4 +1,4 @@
-import { PrismaClient, Schedule } from "../../generated/prisma";
+import { PrismaClient, Schedule } from "@prisma/client";
 import { CreateScheduleDto, TeacherWeeklySchedule, WeekSchedule } from "../../types/schedule.dto";
 import Errors, { HttpCode, Message } from "../../utils/Error";
 

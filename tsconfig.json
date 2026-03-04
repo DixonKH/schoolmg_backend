@@ -4,6 +4,8 @@
     "outDir": "./dist",
     "module": "commonjs",
     "target": "es2020",
+    "skipLibCheck": true,
+    "incremental": true,
     "types": [],
      "strict": true,
     "esModuleInterop": true,

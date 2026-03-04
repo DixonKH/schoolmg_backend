@@ -1,4 +1,4 @@
-import { PrismaClient, Subject, Teacher } from "../../generated/prisma";
+import { PrismaClient, Subject, Teacher } from "@prisma/client";
 import {
   SubjectAverageDTO,
   SubjectAverageResponse,

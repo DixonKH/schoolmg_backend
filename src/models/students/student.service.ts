@@ -4,7 +4,7 @@ import {
   PrismaClient,
   Student,
   UserRole,
-} from "../../generated/prisma";
+} from "@prisma/client";
 import {
   CreateStudentDTO,
   GetStudentsQuery,

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AdminService } from "./admin.service";
-import { Class, PrismaClient, User } from "../../generated/prisma";
+import { Class, PrismaClient, User } from "@prisma/client";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 
 const prisma = new PrismaClient();
@@ -54,7 +54,7 @@ export class AdminController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const user: User | null = await adminService.getUserById(req.params.id);
+      const user: User | null = await adminService.getUserById(req.params.id as string);
 
       return res.status(200).json({
         success: true,
@@ -71,7 +71,9 @@ export class AdminController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const user: PublicUser = await adminService.deleteUser(req.params.id);
+      const user: PublicUser = await adminService.deleteUser(
+        req.params.id as string,
+      );
 
       return res.status(200).json({
         success: true,
@@ -82,5 +84,4 @@ export class AdminController {
       next(error);
     }
   }
-
 }

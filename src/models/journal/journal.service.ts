@@ -3,7 +3,7 @@ import {
   JournalEntry,
   Prisma,
   PrismaClient,
-} from "../../generated/prisma";
+} from "@prisma/client";
 import {
   CreateJournalEntryDTO,
   GetAllJournalFilter,

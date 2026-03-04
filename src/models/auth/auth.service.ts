@@ -1,4 +1,4 @@
-import { PrismaClient, User } from "../../generated/prisma";
+import { PrismaClient, User } from "@prisma/client";
 import { LoginDTO, RegisterDTO } from "../../types/auth.dto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -21,7 +21,7 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    return await this.prisma.$transaction(async (txt) => {
+    return await this.prisma.$transaction(async (txt: any) => {
       const user = await txt.user.create({
         data: {
           username,

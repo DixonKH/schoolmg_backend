@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { SubjectAverageDTO } from "../../types/subject.dto";
 import { SubjectService } from "./subject.service";
 import { NextFunction, Request, Response } from "express";
@@ -51,8 +51,8 @@ export class SubjectController {
     try {
       const { subjectId, teacherId } = req.params;
       const subject = await subjectService.attachSubjectToTeacher(
-        subjectId,
-        teacherId,
+        teacherId as string,
+        subjectId as string,
       );
 
       return res.status(200).json({
@@ -71,8 +71,8 @@ export class SubjectController {
     next: NextFunction,
   ): Promise<Response | undefined> {
     try {
-      const { subjectId } = req.params;
-      const deletedSubject = await subjectService.deleteSubject(subjectId);
+
+      const deletedSubject = await subjectService.deleteSubject(req.params.id as string);
 
       return res.status(200).json({
         success: true,

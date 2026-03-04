@@ -3,7 +3,7 @@ import {
   PrismaClient,
   User,
   UserRole,
-} from "../../generated/prisma";
+} from "@prisma/client";
 import { PaginatedResponse, PublicUser } from "../../types/response.type";
 import Errors, { HttpCode, Message } from "../../utils/Error";
 
